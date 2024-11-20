@@ -1,3 +1,8 @@
+
+# My Ignores
+bin/*
+!bin/.gitkeep
+
 # Prerequisites
 *.d
 

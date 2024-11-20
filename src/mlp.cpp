@@ -4,8 +4,8 @@ Mlp::Mlp(const std::vector<int>& inpStructure){
 
     // Loop through each Layer
     for (size_t layerIdx = 0; layerIdx < inpStructure.size() - 1; layerIdx++) {
-        int cols = inpStructure[layerIdx];
-        int rows = inpStructure[layerIdx + 1];
+        const int cols = inpStructure[layerIdx];
+        const int rows = inpStructure[layerIdx + 1];
 
         // Construct the weight matrix
         std::vector<std::vector<double>> weightMatrix(rows, std::vector<double>(cols, 0.0));

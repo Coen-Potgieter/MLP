@@ -40,6 +40,7 @@ std::vector<std::vector<double>> matrixMultiply(const std::vector<std::vector<do
     // Now perform matrix mult
     const size_t numOutpRows = mat1.size();
     const size_t numOutpCols = mat2[0].size();
+    const size_t numInner = mat2.size();
 
     std::vector<std::vector<double>> outpMat(numOutpRows, std::vector<double>(numOutpCols, 0.0));
 
@@ -50,7 +51,7 @@ std::vector<std::vector<double>> matrixMultiply(const std::vector<std::vector<do
 
             // Calc element
             double runningSum = 0;
-            for (size_t inner = 0; inner < numOutpCols; inner++) {
+            for (size_t inner = 0; inner < numInner; inner++) {
                 runningSum += mat1[row][inner] * mat2[inner][col];
             }
             // Populate element

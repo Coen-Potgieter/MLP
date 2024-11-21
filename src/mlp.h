@@ -26,7 +26,7 @@ class Mlp {
         void printWeights() const;
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
-        void actFunc();
+        /* void actFunc(); */
         std::vector<std::vector<double>> forwardProp(std::vector<std::vector<double>>& inp) const;
         
 

@@ -54,23 +54,34 @@ void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
     }
 }
 
-void Mlp::actFunc() {
-    for (size_t layer = 0; layer < weights.size(); layer ++) {
-        /* sigmoid(this->weights[layer]); */
-        tanh(this->weights[layer]);
-    }
-}
+// I wrote this function but i have no idea what it does ... why tf are we doing tanh on weights???
+/* void Mlp::actFunc(std::vector<std::vector<double>>& inp) { */
+/*     for (size_t layer = 0; layer < weights.size(); layer ++) { */
+/*         /1* sigmoid(this->weights[layer]); *1/ */
+/*         tanh(this->weights[layer]); */
+/*     } */
+/* } */
+
+// Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
 std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double>>& inp) const {
     
-    // Insert row of 1s
+    // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
     std::vector<double> row1s(inp[0].size(), 1.0);
-    inp.insert(inp.begin(), row1s);
 
     // Perform forward prop
     for (int layer = 0; layer < this->weights.size(); layer++){
 
-        
+        // Pre-pad our inputs with row of 1s TODO this is not working
+        inp.insert(inp.begin(), row1s);
+        // wieght matrix multipled with our input
+        std::cout << "Input Rows: " << inp.size() << " Cols: " << inp[0].size() << std::endl;
+        std::cout << "weight Rows: " << this->weights[layer].size() << " Cols: " << this->weights[layer][0].size() << std::endl;
+        std::vector<std::vector<double>> inp = matrixMultiply(this->weights[layer], inp);
+        std::cout << "Mult worked" << std::endl;
+        // apply activation function
+        tanh(inp);
     }
+    return inp;
 }
 
 

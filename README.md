@@ -23,3 +23,7 @@
 - Start thinking about error handling within classes and things like this idk
     - Maybe build my sustem then i can think of errors when im done
     - Learn how error handling is done is prolly the best idea before i start doing it
+- Developing Forward prop
+    - Debug the function, its not working. 
+    - I think it has to do with appending the inp vector
+    - Fix it

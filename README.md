@@ -19,5 +19,7 @@
         - Maybe just pass in a vector or array or whatever
 - Implemented Sigmoid and tanh activation functions
 - Going to do a forward prop thingy
-- Matrix multiplication is break, idk whats happening
-    - I suspect incorrect indexing
+- Matrix mult working
+- Start thinking about error handling within classes and things like this idk
+    - Maybe build my sustem then i can think of errors when im done
+    - Learn how error handling is done is prolly the best idea before i start doing it

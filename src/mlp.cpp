@@ -63,7 +63,7 @@ void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
 /* } */
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
-std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double>>& inp) const {
+std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double>> inp) const {
     
     // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
     std::vector<double> row1s(inp[0].size(), 1.0);

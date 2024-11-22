@@ -83,8 +83,20 @@
     - Storing options
         - Chat recommends this `std::pair` from the `<utility>` library
             - Going to go learn that, I'll be back eventually
+- I'm back
+    - Can now store intermediate values
+    - We are using a struct to store the result
+        - This is defined in `mlp.h`
+        - Note the behaviour:
+            - Last element of z is the same as the first element of a
+    - Also implemented alias that are in alias.h
+
+- Now doing Getters and setters then going to testing to ensure they work an constructor as well
+- When you see this again, do the printing of the enums in the helper functions
+
 
 ### Possible improvements
 
 - Change forward prop algo to handle bias calcs separaetey so we dont prepad the `inp` vector on each itteration
+- Take note of the TODO flags all over the code
 

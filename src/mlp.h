@@ -1,36 +1,69 @@
 #ifndef MLP_H
 #define MLP_H
 
-#include <vector>
 #include <iostream>
 #include <utility>
+#include "alias.h"
 
-class Mlp {
+struct ForwardPropResult {
+    DoubleVector3D z; // Output of net function
+    DoubleVector3D a; // Output of activations
+};
 
-    private:
-        std::vector<std::vector<std::vector<double>>> weights; // Vector holding variable number of matrices, that are of variable size
+class MLP {
+
     public:
-
-        // Enum to specify the weight initialisation method
+        // Enum for implementation
         enum class InitMethod {
             UNIFORM,
-            GUASSIAN
+            GAUSSIAN // TODO: Implement this
         };
         enum class ActFunc {
             SIGMOID,
-            GUASSIAN
+            TANH,
+            RELU, // TODO: Implement this
+            ELU  // TODO: Implement this
+        };
+        enum class LossFunc {
+            MSE,
+            ENTROPY // TODO: implement this
         };
 
-        Mlp(const std::vector<int>& inpStructure);
-        ~Mlp();
+        // Member Methods
+        MLP(const std::vector<int>& inpStructure, const LossFunc inpLossFunc = LossFunc::MSE, const float inpLR=0.1, const int inpDecayRate=0, const int inpBatchSize=32);
+        ~MLP();
 
-        void printWeights() const;
+        // Getters
+        DoubleVector3D getWeights() const;
+        ActFunc getHiddenLayerAct() const;
+        ActFunc getOutputLayerAct() const;
+        LossFunc getLossFunc() const;
+        float getLR() const;
+        int getDecayRate() const;
+        int getBatchSize() const;
+        // Setters
+        /* void setWeights(const */ // TODO
+        void setHiddenLayerAct(const ActFunc newAct);
+        void setOutputLayerAct(const ActFunc newAct);
+        void setLossFunc(const LossFunc newLossFunc);
+        void setLR(const float newLR);
+        void setDecayRate(const int newDecayRate);
+        void setBatchSize(const int newBatchSize);
+
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
-        /* void actFunc(); */
-    std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> forwardProp(std::vector<std::vector<double>> inpQuery) const;
-        
-        void backPropIteration(const std::vector<std::vector<double>>& inpBatch);
+        DoubleVector2D calcLoss(const std::vector<double> expectedResults);
+        DoubleVector2D calcLoss(const std::vector<int> expectedResults); // Overload to handle classificaiton case
+        ForwardPropResult forwardProp(DoubleVector2D inpQuery) const;
+        void backPropIteration(const DoubleVector2D& inpBatch);
 
+    private:
+        DoubleVector3D weights; // 3D explanation: Vector holding variable number of matrices, that are of variable size
+        ActFunc hiddenLayerAct;
+        ActFunc outputLayerAct;
+        LossFunc lossFunc;
+        float initialLR;
+        int decayRate;
+        int batchSize;
 };
 #endif

@@ -2,9 +2,10 @@
 #include "helperfuncs.h"
 #include "debug_log.h"
 
-Mlp::Mlp(const std::vector<int>& inpStructure){
 
-    // Loop through each Layer
+MLP::MLP(const std::vector<int>& inpStructure, const LossFunc inpLossFunc, const float inpLR, const int inpDecayRate, const int inpBatchSize) {
+
+    // Populate weights
     for (size_t layerIdx = 0; layerIdx < inpStructure.size() - 1; layerIdx++) {
         const int cols = inpStructure[layerIdx];
         const int rows = inpStructure[layerIdx + 1];
@@ -15,21 +16,58 @@ Mlp::Mlp(const std::vector<int>& inpStructure){
         // Now assign wieght matrix to out member variable
         this->weights.push_back(weightMatrix);
     }
+    // Populate other member variables
+    this->lossFunc = inpLossFunc;
+    this->initialLR = inpLR;
+    this->decayRate = inpDecayRate;
+    this->batchSize = inpBatchSize;
+}
+MLP::~MLP() = default;
+
+// Getters
+DoubleVector3D MLP::getWeights() const {
+    return this->weights;
+}
+MLP::ActFunc MLP::getHiddenLayerAct() const {
+    return this->hiddenLayerAct;
+}
+MLP::ActFunc MLP::getOutputLayerAct() const {
+    return this->outputLayerAct;
+}
+MLP::LossFunc MLP::getLossFunc() const {
+    return this->lossFunc;
+}
+float MLP::getLR() const {
+    return this->initialLR;
+}
+int MLP::getDecayRate() const {
+    return this->decayRate;
+}
+int MLP::getBatchSize() const {
+    return this->batchSize;
+}
+// Setters
+/* void setWeights(const */ // TODO
+void MLP::setHiddenLayerAct(const ActFunc newAct) {
+    this->hiddenLayerAct = newAct;
+}
+void MLP::setOutputLayerAct(const ActFunc newAct){
+    this->outputLayerAct = newAct;
+}
+void MLP::setLossFunc(const LossFunc newLossFunc) {
+    this->lossFunc = newLossFunc;
+}
+void MLP::setLR(const float newLR) {
+    this->initialLR = newLR;
+}
+void MLP::setDecayRate(const int newDecayRate) {
+    this->decayRate = newDecayRate;
+}
+void MLP::setBatchSize(const int newBatchSize) {
+    this->batchSize = newBatchSize;
 }
 
-Mlp::~Mlp() = default;
-
-void Mlp::printWeights() const {
-    std::cout << std::endl;
-    for (size_t layer = 0; layer < weights.size(); layer ++) {
-        std::cout << "Pinting Layer: " << layer << std::endl;
-        printMatrix(this->weights[layer]);
-        std::cout << std::endl;
-    }
-    std::cout << std::endl;
-    std::cout << std::endl;
-}
-void Mlp::initWeights(InitMethod method, const int minVal, const int maxVal) {
+void MLP::initWeights(InitMethod method, const int minVal, const int maxVal) {
 
     for (size_t layer = 0; layer < weights.size(); layer ++) {
         for (size_t row = 0; row < weights[layer].size(); row++){
@@ -42,7 +80,7 @@ void Mlp::initWeights(InitMethod method, const int minVal, const int maxVal) {
     }
 }
 
-void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
+void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
 
 
     for (size_t layer = 0; layer < this->weights.size(); layer ++) {
@@ -56,7 +94,7 @@ void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
 }
 
 // I wrote this function but i have no idea what it does ... why tf are we doing tanh on weights???
-/* void Mlp::actFunc(std::vector<std::vector<double>>& inp) { */
+/* void MLP::actFunc(std::vector<std::vector<double>>& inp) { */
 /*     for (size_t layer = 0; layer < weights.size(); layer ++) { */
 /*         /1* sigmoid(this->weights[layer]); *1/ */
 /*         tanh(this->weights[layer]); */
@@ -64,7 +102,7 @@ void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
 /* } */
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
-std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> Mlp::forwardProp(std::vector<std::vector<double>> inpQuery) const {
+ForwardPropResult MLP::forwardProp(DoubleVector2D inpQuery) const {
 
     DEBUG_LOG("Performing Forward Prop");
     
@@ -72,8 +110,8 @@ std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector
     std::vector<double> row1s(inpQuery[0].size(), 1.0);
 
     // Declare varables to store initermediate values (See README why its 3d)
-    std::vector<std::vector<std::vector<double>>> z; 
-    std::vector<std::vector<std::vector<double>>> a; 
+    DoubleVector3D z; 
+    DoubleVector3D a; 
 
     // Perform forward prop
     for (int layer = 0; layer < this->weights.size(); layer++){
@@ -93,20 +131,21 @@ std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector
         // apply activation function and store result
         tanh(inpQuery);
         a.push_back(inpQuery);
-        
     }
 
-    // Create pair and return
-    std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> results(z,a);
+    // Create an populate struct
+    ForwardPropResult results;
+    results.z = z;
+    results.a = a;
     return results;
 }
 
-void Mlp::backPropIteration(const std::vector<std::vector<double>>& inpBatch) {
+void MLP::backPropIteration(const DoubleVector2D& inpBatch) {
 
     // Forward prop run, then calc neuron differentials then can get weight update with those
 
-    this->forwardProp(inpBatch);
-    std::cout << "HITYA" << std::endl;
+    ForwardPropResult results = this->forwardProp(inpBatch);
+
 }
 
 

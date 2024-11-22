@@ -1,9 +1,8 @@
 
 
 #include "helperfuncs.h"
-#include <stdexcept>
 
-void printMatrix(const std::vector<std::vector<double>>& mat) {
+void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
         for (const double& elem : row) {
             // Adjust the width for better alignment
@@ -13,7 +12,7 @@ void printMatrix(const std::vector<std::vector<double>>& mat) {
     }
 }
 
-void sigmoid(std::vector<std::vector<double>>& mat) {
+void sigmoid(DoubleVector2D& mat) {
     for (std::vector<double>& row : mat) {
         for (double& elem : row) {
             // Sigmoid on each elemement
@@ -21,7 +20,7 @@ void sigmoid(std::vector<std::vector<double>>& mat) {
         }
     }
 }
-void tanh(std::vector<std::vector<double>>& mat) {
+void tanh(DoubleVector2D& mat) {
     for (std::vector<double>& row : mat) {
         for (double& elem : row) {
             // Tanh on each elemement
@@ -30,7 +29,7 @@ void tanh(std::vector<std::vector<double>>& mat) {
     }
 }
 
-std::vector<std::vector<double>> matrixMultiply(const std::vector<std::vector<double>>& mat1, const std::vector<std::vector<double>>& mat2) {
+DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2) {
 
     // Ensure that dimensions are correct (mat1 cols == mat2 rows)
     if (mat1[0].size() != mat2.size()){
@@ -42,7 +41,7 @@ std::vector<std::vector<double>> matrixMultiply(const std::vector<std::vector<do
     const size_t numOutpCols = mat2[0].size();
     const size_t numInner = mat2.size();
 
-    std::vector<std::vector<double>> outpMat(numOutpRows, std::vector<double>(numOutpCols, 0.0));
+    DoubleVector2D outpMat(numOutpRows, std::vector<double>(numOutpCols, 0.0));
 
     
     // Populate each element in `outpMat`
@@ -58,12 +57,24 @@ std::vector<std::vector<double>> matrixMultiply(const std::vector<std::vector<do
             outpMat[row][col] = runningSum;
         }
     }
-
     return outpMat;
-
-
 }
 
+void printMlpEnum(MLP::InitMethod inpEnum) {
+    switch(inpEnum) {
+        case MLP::InitMethod::UNIFORM:
+            std::cout << "UNIFORM" << std::endl;
+            break;
+        case MLP::InitMethod::GAUSSIAN:
+            std::cout << "GAUSSIAN" << std::endl;
+            break;
+        default:
+            std::cout << "Printing for this not implemented just yet, so get here and do it" << std::endl;
+    }
+    return;
+}
+void printMlpEnum(MLP::ActFunc inpEnum);
+void printMlpEnum(MLP::LossFunc inpEnum);
 
 
 

@@ -64,12 +64,16 @@ void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
 /* } */
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
-std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double>> inpQuery) const {
+std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> Mlp::forwardProp(std::vector<std::vector<double>> inpQuery) const {
 
     DEBUG_LOG("Performing Forward Prop");
     
     // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
     std::vector<double> row1s(inpQuery[0].size(), 1.0);
+
+    // Declare varables to store initermediate values (See README why its 3d)
+    std::vector<std::vector<std::vector<double>>> z; 
+    std::vector<std::vector<std::vector<double>>> a; 
 
     // Perform forward prop
     for (int layer = 0; layer < this->weights.size(); layer++){
@@ -82,19 +86,26 @@ std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double
                 << this->weights[layer].size() << "x" << this->weights[layer][0].size()
                 << " * " << inpQuery.size() << "x" << inpQuery[0].size());
 
-        // wieght matrix multipled with our inpQueryut
+        // wieght matrix multipled with our inpQuery and store result
         inpQuery = matrixMultiply(this->weights[layer], inpQuery);
-        // apply activation function
+        z.push_back(inpQuery);
+
+        // apply activation function and store result
         tanh(inpQuery);
+        a.push_back(inpQuery);
+        
     }
-    return inpQuery;
+
+    // Create pair and return
+    std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> results(z,a);
+    return results;
 }
 
 void Mlp::backPropIteration(const std::vector<std::vector<double>>& inpBatch) {
 
     // Forward prop run, then calc neuron differentials then can get weight update with those
 
-    this->forwardProp(std::vector<std::vector<double>> inp)
+    this->forwardProp(inpBatch);
     std::cout << "HITYA" << std::endl;
 }
 

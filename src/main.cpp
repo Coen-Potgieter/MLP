@@ -8,5 +8,8 @@ int main() {
     Mlp myMLP(myStruct);
     myMLP.initWeights(Mlp::InitMethod::UNIFORM);
     myMLP.initBias(Mlp::InitMethod::UNIFORM, -10, 10);
-    myMLP.backProp();
+    std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> res = myMLP.forwardProp(myInput);
+
+    std::cout << std::endl;
+    printMatrix(res.second[1]);
 }

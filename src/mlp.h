@@ -3,6 +3,7 @@
 
 #include <vector>
 #include <iostream>
+#include <utility>
 
 class Mlp {
 
@@ -27,7 +28,7 @@ class Mlp {
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
         /* void actFunc(); */
-        std::vector<std::vector<double>> forwardProp(std::vector<std::vector<double>> inp) const;
+    std::pair<std::vector<std::vector<std::vector<double>>>, std::vector<std::vector<std::vector<double>>>> forwardProp(std::vector<std::vector<double>> inpQuery) const;
         
         void backPropIteration(const std::vector<std::vector<double>>& inpBatch);
 

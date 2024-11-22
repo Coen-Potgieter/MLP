@@ -1,5 +1,6 @@
 #include "mlp.h"
 #include "helperfuncs.h"
+#include "debug_log.h"
 
 Mlp::Mlp(const std::vector<int>& inpStructure){
 
@@ -71,13 +72,16 @@ std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double
     // Perform forward prop
     for (int layer = 0; layer < this->weights.size(); layer++){
 
-        // Pre-pad our inputs with row of 1s TODO this is not working
+        // Pre-pad our inputs with row of 1s
         inp.insert(inp.begin(), row1s);
+
+        // For Debugging
+        DEBUG_LOG("`weights` Matrix * `inp` Matrix: " 
+                << this->weights[layer].size() << "x" << this->weights[layer][0].size()
+                << " * " << inp.size() << "x" << inp[0].size());
+
         // wieght matrix multipled with our input
-        std::cout << "Input Rows: " << inp.size() << " Cols: " << inp[0].size() << std::endl;
-        std::cout << "weight Rows: " << this->weights[layer].size() << " Cols: " << this->weights[layer][0].size() << std::endl;
-        std::vector<std::vector<double>> inp = matrixMultiply(this->weights[layer], inp);
-        std::cout << "Mult worked" << std::endl;
+        inp = matrixMultiply(this->weights[layer], inp);
         // apply activation function
         tanh(inp);
     }

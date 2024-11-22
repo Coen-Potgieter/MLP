@@ -27,3 +27,12 @@
     - Debug the function, its not working. 
     - I think it has to do with appending the inp vector
     - Fix it
+- Forward Prop working
+    - The problem was that we were redclaring the inp variable when it was returned (silly)
+    - Note that I may want to try a different implementation of handling bias separaetely to avoid having to pre pad our `inp` vector on each loop
+
+
+### Possible improvements
+
+- Change forward prop algo to handle bias calcs separaetey so we dont prepad the `inp` vector on each itteration
+

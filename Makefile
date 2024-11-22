@@ -1,7 +1,8 @@
 SRC = $(wildcard src/*.cpp)
 OBJS = $(SRC:src/%.cpp=bin/%.o)
-DEBUG_FLAGS = -g -WALL
+DEBUG_OBJS = $(SRC:src/%.cpp=bin/debug_%.o)
 FLAGS = -std=c++20 -O2
+DEBUG_FLAGS = $(FLAGS) -DDEBUG -g -Wall
 
 all: build run
 
@@ -11,14 +12,20 @@ build: $(OBJS)
 run:
 	bin/my_program
 
-# Clean target to remove object files and binaries
-clean:
-	rm -f bin/*.o bin/my_program
-
 # Object file rule
 bin/%.o: src/%.cpp
 	g++ $(FLAGS) -c $< -o $@
 
-# Debug target for building with debug flags
-debug: $(OBJS)
+# Clean target to remove object files and binaries
+clean:
+	rm -f bin/*.o bin/my_program
+
+# Debug build
+debug: $(DEBUG_OBJS)
 	g++ $(DEBUG_FLAGS) $^ -o bin/my_program
+
+
+# Object files for debug (built with debug flags)
+bin/debug_%.o: src/%.cpp
+	g++ $(DEBUG_FLAGS) -c $< -o $@
+

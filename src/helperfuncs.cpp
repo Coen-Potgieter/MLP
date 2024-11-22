@@ -32,9 +32,6 @@ void tanh(std::vector<std::vector<double>>& mat) {
 
 std::vector<std::vector<double>> matrixMultiply(const std::vector<std::vector<double>>& mat1, const std::vector<std::vector<double>>& mat2) {
 
-    std::cout << mat1.size() << std::endl;
-    std::cout << mat1[0].size() << std::endl;
-    std::cout << mat2.size() << std::endl;
     // Ensure that dimensions are correct (mat1 cols == mat2 rows)
     if (mat1[0].size() != mat2.size()){
         throw std::invalid_argument("Number of columns in mat1 must be eqaul to the number of rows in mat2");

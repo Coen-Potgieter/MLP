@@ -93,6 +93,11 @@
 
 - Now doing Getters and setters then going to testing to ensure they work an constructor as well
 - When you see this again, do the printing of the enums in the helper functions
+- All getters and setters work
+- Loss function done
+    - Maybe add template to hadnle both types, I dont want to rewrite all the functions code
+    - Cant do entropy for doubles though???
+    - Figure this shit out
 
 
 ### Possible improvements

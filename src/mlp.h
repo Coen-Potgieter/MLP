@@ -30,7 +30,7 @@ class MLP {
         };
 
         // Member Methods
-        MLP(const std::vector<int>& inpStructure, const LossFunc inpLossFunc = LossFunc::MSE, const float inpLR=0.1, const int inpDecayRate=0, const int inpBatchSize=32);
+        MLP(const std::vector<int>& inpStructure, const ActFunc inpHiddenLayerAct=ActFunc::RELU, const ActFunc inpOutputLayerAct=ActFunc::SIGMOID, const LossFunc inpLossFunc = LossFunc::MSE, const float inpLR=0.1, const int inpDecayRate=0, const int inpBatchSize=32);
         ~MLP();
 
         // Getters
@@ -52,8 +52,8 @@ class MLP {
 
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
-        DoubleVector2D calcLoss(const std::vector<double> expectedResults);
-        DoubleVector2D calcLoss(const std::vector<int> expectedResults); // Overload to handle classificaiton case
+        std::vector<double> calcLoss(const std::vector<double>& groundTruth, const std::vector<double>& results) const;
+        std::vector<double> calcLoss(const std::vector<int>& groundTruth, const std::vector<int>& results) const; // Overload to handle classificaiton case
         ForwardPropResult forwardProp(DoubleVector2D inpQuery) const;
         void backPropIteration(const DoubleVector2D& inpBatch);
 

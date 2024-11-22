@@ -3,7 +3,7 @@
 #include "debug_log.h"
 
 
-MLP::MLP(const std::vector<int>& inpStructure, const LossFunc inpLossFunc, const float inpLR, const int inpDecayRate, const int inpBatchSize) {
+MLP::MLP(const std::vector<int>& inpStructure, const ActFunc inpHiddenLayerAct, const ActFunc inpOutputLayerAct, const LossFunc inpLossFunc, const float inpLR, const int inpDecayRate, const int inpBatchSize) {
 
     // Populate weights
     for (size_t layerIdx = 0; layerIdx < inpStructure.size() - 1; layerIdx++) {
@@ -17,6 +17,8 @@ MLP::MLP(const std::vector<int>& inpStructure, const LossFunc inpLossFunc, const
         this->weights.push_back(weightMatrix);
     }
     // Populate other member variables
+    this->hiddenLayerAct = inpHiddenLayerAct;
+    this->outputLayerAct = inpOutputLayerAct;
     this->lossFunc = inpLossFunc;
     this->initialLR = inpLR;
     this->decayRate = inpDecayRate;
@@ -81,8 +83,6 @@ void MLP::initWeights(InitMethod method, const int minVal, const int maxVal) {
 }
 
 void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
-
-
     for (size_t layer = 0; layer < this->weights.size(); layer ++) {
         for (size_t row = 0; row < this->weights[layer].size(); row++){
             // Uniform
@@ -93,13 +93,23 @@ void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
     }
 }
 
-// I wrote this function but i have no idea what it does ... why tf are we doing tanh on weights???
-/* void MLP::actFunc(std::vector<std::vector<double>>& inp) { */
-/*     for (size_t layer = 0; layer < weights.size(); layer ++) { */
-/*         /1* sigmoid(this->weights[layer]); *1/ */
-/*         tanh(this->weights[layer]); */
-/*     } */
-/* } */
+std::vector<double> MLP::calcLoss(const std::vector<double>& groundTruth, const std::vector<double>& results) const {
+
+    const int numInstances = groundTruth.size();
+    std::vector<double> errors(numInstances, -1.0);
+
+    double diff;
+
+    for (int i = 0; i < numInstances; i++) {
+        diff = groundTruth[i] - results[i];
+        errors[i] = 0.5 * diff * diff;
+    }
+    return errors;
+}
+
+std::vector<double> MLP::calcLoss(const std::vector<int>& groundTruth, const std::vector<int>& results) const{
+    std::cout << "NOT IMPLEMENTED: TODO: " << std::endl;
+}
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
 ForwardPropResult MLP::forwardProp(DoubleVector2D inpQuery) const {

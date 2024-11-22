@@ -73,8 +73,39 @@ void printMlpEnum(MLP::InitMethod inpEnum) {
     }
     return;
 }
-void printMlpEnum(MLP::ActFunc inpEnum);
-void printMlpEnum(MLP::LossFunc inpEnum);
+void printMlpEnum(MLP::ActFunc inpEnum) {
+
+    switch(inpEnum) {
+        case MLP::ActFunc::SIGMOID:
+            std::cout << "SIGMOID" << std::endl;
+            break;
+        case MLP::ActFunc::TANH:
+            std::cout << "TANH" << std::endl;
+            break;
+        case MLP::ActFunc::RELU:
+            std::cout << "RELU" << std::endl;
+            break;
+        case MLP::ActFunc::ELU:
+            std::cout << "ELU" << std::endl;
+            break;
+        default:
+            std::cout << "Printing for this not implemented just yet, so get here and do it" << std::endl;
+    }
+    return;
+}
+void printMlpEnum(MLP::LossFunc inpEnum) {
+
+    switch(inpEnum) {
+        case MLP::LossFunc::MSE:
+            std::cout << "MSE" << std::endl;
+            break;
+        case MLP::LossFunc::ENTROPY:
+            std::cout << "ENTROPY" << std::endl;
+            break;
+        default:
+            std::cout << "Printing for this not implemented just yet, so get here and do it" << std::endl;
+    }
+}
 
 
 

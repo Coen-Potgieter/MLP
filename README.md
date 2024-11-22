@@ -98,6 +98,7 @@
     - Maybe add template to hadnle both types, I dont want to rewrite all the functions code
     - Cant do entropy for doubles though???
     - Figure this shit out
+- change result param from calc loss function to predictions rather
 
 
 ### Possible improvements

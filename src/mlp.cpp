@@ -64,30 +64,39 @@ void Mlp::initBias(InitMethod method, const int minVal, const int maxVal) {
 /* } */
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
-std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double>> inp) const {
+std::vector<std::vector<double>> Mlp::forwardProp(std::vector<std::vector<double>> inpQuery) const {
+
+    DEBUG_LOG("Performing Forward Prop");
     
     // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
-    std::vector<double> row1s(inp[0].size(), 1.0);
+    std::vector<double> row1s(inpQuery[0].size(), 1.0);
 
     // Perform forward prop
     for (int layer = 0; layer < this->weights.size(); layer++){
 
-        // Pre-pad our inputs with row of 1s
-        inp.insert(inp.begin(), row1s);
+        // Pre-pad our inpQueryuts with row of 1s
+        inpQuery.insert(inpQuery.begin(), row1s);
 
         // For Debugging
-        DEBUG_LOG("`weights` Matrix * `inp` Matrix: " 
+        DEBUG_LOG("`weights` Matrix * `inpQuery` Matrix: " 
                 << this->weights[layer].size() << "x" << this->weights[layer][0].size()
-                << " * " << inp.size() << "x" << inp[0].size());
+                << " * " << inpQuery.size() << "x" << inpQuery[0].size());
 
-        // wieght matrix multipled with our input
-        inp = matrixMultiply(this->weights[layer], inp);
+        // wieght matrix multipled with our inpQueryut
+        inpQuery = matrixMultiply(this->weights[layer], inpQuery);
         // apply activation function
-        tanh(inp);
+        tanh(inpQuery);
     }
-    return inp;
+    return inpQuery;
 }
 
+void Mlp::backPropIteration(const std::vector<std::vector<double>>& inpBatch) {
+
+    // Forward prop run, then calc neuron differentials then can get weight update with those
+
+    this->forwardProp(std::vector<std::vector<double>> inp)
+    std::cout << "HITYA" << std::endl;
+}
 
 
 

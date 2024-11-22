@@ -30,7 +30,52 @@
 - Forward Prop working
     - The problem was that we were redclaring the inp variable when it was returned (silly)
     - Note that I may want to try a different implementation of handling bias separaetely to avoid having to pre pad our `inp` vector on each loop
+    - Right now it just performs tanh everywhere
+        - This means including the output
 
+### Backprop
+
+- Going to make a function for a single wieght update itteration
+- Then another function to do BGD
+
+#### Single iteration developement plan
+
+- take in input batch
+- run forward pass
+- get error
+- calc differential wrt each neuron
+- then with these neuron differentials we can calc weight updates very easily
+- update weights in this single iteration function
+
+#### BGD developement plan
+
+- Split data accordingly into batches
+- perform iteration in each batch
+- do this for all batches for x amount of epochs
+
+#### Hyperparams
+
+- Handle the following hyperparams by making them member variables
+    - Learning rate (and exp decay)
+    - Loss function
+    - Batch Size
+
+#### Considerations
+
+- Normailisation of inputs?
+    - preproccessing step, can do this as a separate function
+- For each forward pass, ensure we store intermediate results
+    - TODO: think more about this
+- Shuffle these batches at the beginning of each epoch
+    - Handle datasets that can't be split perfectly into x amount of batches
+- Track loss function at each iteration
+- Implement early stopping
+
+### Back to process
+
+- Forward prop revisited
+    - Need to store intermediate results for back prop
+        - z and a
 
 ### Possible improvements
 

@@ -29,10 +29,7 @@ class Mlp {
         /* void actFunc(); */
         std::vector<std::vector<double>> forwardProp(std::vector<std::vector<double>> inp) const;
         
-
-
-
-        
+        void backPropIteration(const std::vector<std::vector<double>>& inpBatch);
 
 };
 #endif

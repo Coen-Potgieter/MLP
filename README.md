@@ -75,7 +75,14 @@
 
 - Forward prop revisited
     - Need to store intermediate results for back prop
-        - z and a
+        - output of net function (z) and the output of the activations (a)
+    - This means instead of right now just returning the output of the forward pass we need to return 2 3d vectors
+        - Why 3D vector?
+            - understand that we are performing a single forward pass on a batch ie. mutliple instances
+            - this the dimensions will be (layer, neuron, instance)
+    - Storing options
+        - Chat recommends this `std::pair` from the `<utility>` library
+            - Going to go learn that, I'll be back eventually
 
 ### Possible improvements
 

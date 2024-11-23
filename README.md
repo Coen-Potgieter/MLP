@@ -103,6 +103,7 @@
 - functions to calcluate errors and average loss implemented
     - Right now they only do MSE
 - Need to learn how to import csv files
+- ffs learn file handling
 
 
 

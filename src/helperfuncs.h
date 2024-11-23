@@ -14,5 +14,6 @@ DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& 
 void printMlpEnum(MLP::InitMethod inpEnum);
 void printMlpEnum(MLP::ActFunc inpEnum);
 void printMlpEnum(MLP::LossFunc inpEnum);
+void importCSV(std::string_view);
 
 

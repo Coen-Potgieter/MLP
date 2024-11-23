@@ -42,8 +42,9 @@
 
 - take in input batch
 - run forward pass
-- get error
-- calc differential wrt each neuron
+- We then get the average loss of the batch
+    - ie. calc `pred - actual` for each instance then take the average
+- calc differential wrt each neuron using this average loss value
 - then with these neuron differentials we can calc weight updates very easily
 - update weights in this single iteration function
 
@@ -99,10 +100,18 @@
     - Cant do entropy for doubles though???
     - Figure this shit out
 - change result param from calc loss function to predictions rather
+- functions to calcluate errors and average loss implemented
+    - Right now they only do MSE
+- Need to learn how to import csv files
+
 
 
 ### Possible improvements
 
 - Change forward prop algo to handle bias calcs separaetey so we dont prepad the `inp` vector on each itteration
 - Take note of the TODO flags all over the code
+
+### References
+
+- Data set is from: [Cyber Security Attacks](https://www.kaggle.com/datasets/teamincribo/cyber-security-attacks?resource=download&select=cybersecurity_attacks.csv)
 

@@ -6,13 +6,13 @@ int main() {
     std::vector<int> myStruct = { 3, 10, 5};
     MLP mlp(myStruct);
 
-    std::vector<double> groundTruth = { 3.4, 1.1 };
-    std::vector<double> results = { 3.9, 2.1 };
-    std::vector<double> errors = mlp.calcError(groundTruth, results);
+    /* std::vector<int> groundTruth = { 4, 1 }; */
+    /* std::vector<int> results = { 9, 1 }; */
+    std::vector<double> groundTruth = { 4.3, 1 };
+    std::vector<double> results = { 9.3, 1 };
+    double errors = mlp.calcAvgLoss(groundTruth, results);
 
-    for (const double& elem : errors) {
-        std::cout << elem << std::endl;
-    }
+    std::cout << errors << std::endl;
     return 0;
     DoubleVector2D myInput = { {1,2,3,5}, {4,5,6,7}, {7,8,9,10} };
 

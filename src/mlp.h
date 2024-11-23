@@ -3,12 +3,17 @@
 
 #include <iostream>
 #include <utility>
+#include <concepts>
 #include "alias.h"
 
 struct ForwardPropResult {
     DoubleVector3D z; // Output of net function
     DoubleVector3D a; // Output of activations
 };
+
+// Concept for input param as either int vector or double vector
+template <typename T>
+concept NumericVector = std::same_as<T, std::vector<double>> || std::same_as<T, std::vector<int>> || std::same_as<T, std::vector<float>>;
 
 class MLP {
 
@@ -52,10 +57,33 @@ class MLP {
 
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
-        std::vector<double> calcError(const std::vector<double>& groundTruth, const std::vector<double>& results) const;
-        std::vector<double> calcError(const std::vector<int>& groundTruth, const std::vector<int>& results) const; // Overload to handle classificaiton case
         ForwardPropResult forwardProp(DoubleVector2D inpQuery) const;
         void backPropIteration(const DoubleVector2D& inpBatch);
+        
+        // Template
+        template <NumericVector Vec>
+        std::vector<double> calcError(const Vec& groundTruth, const Vec& preds) const {
+            const int numInstances = groundTruth.size();
+            std::vector<double> errors(numInstances, -1.0);
+
+            double diff;
+
+            for (int i = 0; i < numInstances; i++) {
+                diff = groundTruth[i] - preds[i];
+                errors[i] = 0.5 * diff * diff;
+            }
+            return errors;
+        }
+        template <NumericVector Vec>
+        double calcAvgLoss(const Vec& groundTruth, const Vec& preds) const {
+
+            const double numInstances = groundTruth.size();
+            double runningSum = 0;
+            for (int i = 0; i < numInstances; i++) {
+                runningSum += preds[i] - groundTruth[i];
+            }
+            return runningSum / numInstances;
+        }
 
     private:
         DoubleVector3D weights; // 3D explanation: Vector holding variable number of matrices, that are of variable size

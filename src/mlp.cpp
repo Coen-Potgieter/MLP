@@ -93,23 +93,6 @@ void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
     }
 }
 
-std::vector<double> MLP::calcError(const std::vector<double>& groundTruth, const std::vector<double>& results) const {
-
-    const int numInstances = groundTruth.size();
-    std::vector<double> errors(numInstances, -1.0);
-
-    double diff;
-
-    for (int i = 0; i < numInstances; i++) {
-        diff = groundTruth[i] - results[i];
-        errors[i] = 0.5 * diff * diff;
-    }
-    return errors;
-}
-
-std::vector<double> MLP::calcError(const std::vector<int>& groundTruth, const std::vector<int>& results) const{
-    std::cout << "NOT IMPLEMENTED: TODO: " << std::endl;
-}
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
 ForwardPropResult MLP::forwardProp(DoubleVector2D inpQuery) const {
@@ -155,6 +138,7 @@ void MLP::backPropIteration(const DoubleVector2D& inpBatch) {
     // Forward prop run, then calc neuron differentials then can get weight update with those
 
     ForwardPropResult results = this->forwardProp(inpBatch);
+
 
 }
 

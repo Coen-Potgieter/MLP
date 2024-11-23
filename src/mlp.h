@@ -52,8 +52,8 @@ class MLP {
 
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
-        std::vector<double> calcLoss(const std::vector<double>& groundTruth, const std::vector<double>& results) const;
-        std::vector<double> calcLoss(const std::vector<int>& groundTruth, const std::vector<int>& results) const; // Overload to handle classificaiton case
+        std::vector<double> calcError(const std::vector<double>& groundTruth, const std::vector<double>& results) const;
+        std::vector<double> calcError(const std::vector<int>& groundTruth, const std::vector<int>& results) const; // Overload to handle classificaiton case
         ForwardPropResult forwardProp(DoubleVector2D inpQuery) const;
         void backPropIteration(const DoubleVector2D& inpBatch);
 

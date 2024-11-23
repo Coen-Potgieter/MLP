@@ -8,7 +8,7 @@ int main() {
 
     std::vector<double> groundTruth = { 3.4, 1.1 };
     std::vector<double> results = { 3.9, 2.1 };
-    std::vector<double> errors = mlp.calcLoss(groundTruth, results);
+    std::vector<double> errors = mlp.calcError(groundTruth, results);
 
     for (const double& elem : errors) {
         std::cout << elem << std::endl;

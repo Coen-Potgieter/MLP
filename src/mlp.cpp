@@ -93,7 +93,7 @@ void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
     }
 }
 
-std::vector<double> MLP::calcLoss(const std::vector<double>& groundTruth, const std::vector<double>& results) const {
+std::vector<double> MLP::calcError(const std::vector<double>& groundTruth, const std::vector<double>& results) const {
 
     const int numInstances = groundTruth.size();
     std::vector<double> errors(numInstances, -1.0);
@@ -107,7 +107,7 @@ std::vector<double> MLP::calcLoss(const std::vector<double>& groundTruth, const 
     return errors;
 }
 
-std::vector<double> MLP::calcLoss(const std::vector<int>& groundTruth, const std::vector<int>& results) const{
+std::vector<double> MLP::calcError(const std::vector<int>& groundTruth, const std::vector<int>& results) const{
     std::cout << "NOT IMPLEMENTED: TODO: " << std::endl;
 }
 

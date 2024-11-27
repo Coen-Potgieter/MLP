@@ -1,6 +1,7 @@
 
 
 #include "helperfuncs.h"
+#include "mlp.h"
 #include <filesystem>
 #include <stdexcept>
 #include <string>
@@ -110,22 +111,10 @@ void printMlpEnum(MLP::LossFunc inpEnum) {
     }
 }
 
-std::vector<std::string> splitString(const std::string& content, char delimiter) {
-
+std::vector<std::string> separateRow(const std::string& content) {
     std::vector<std::string> result;
-    std::string currLine;
-    size_t endQuotesConfirmation;
-    bool inQuotes = false;
-    size_t start = 0, end = 0;
-
-    while ((end = content.find(delimiter, start)) != std::string::npos) {
-
-        // Check if elem starts with a '"'
-        if (content.at(start) == '"') {
-            // If it does then find the last '"' 
-            end = content.find('"', start + 1);
-            end += 1;
-        }
+    size_t start=0, end=0;
+    while ((end = content.find(',', start)) != std::string::npos) {
         result.push_back(content.substr(start, end-start));
         start = end + 1;
     }
@@ -133,10 +122,10 @@ std::vector<std::string> splitString(const std::string& content, char delimiter)
     return result;
 }
 
-std::vector<std::vector<std::string>> importCSV(std::string_view pathToCSV) {
 
-    std::vector<std::vector<std::string>> outp;
+DoubleVector2D importCSV(std::string_view pathToCSV) {
 
+    DoubleVector2D outp;
     // Check if input is a valid path to a csv
     fs::path fp = pathToCSV;
     if (fp.extension() != ".csv" || !fs::exists(fp)) {
@@ -150,24 +139,35 @@ std::vector<std::vector<std::string>> importCSV(std::string_view pathToCSV) {
         throw std::ios_base::failure("Error: Could Not Open The File");
     }
 
-    // Parse the file
     std::string line;
+    std::vector<std::string> row;
+    std::vector<double> procRow(4, -1);
 
+    std::string possibleDegrees[] = { "bachelor", "highschool" };
+    size_t start = 0, end = 0;
+
+    std::getline(fin, line);
     while (std::getline(fin, line)) {
-        outp.push_back(splitString(line, ','));
+
+        row = separateRow(line);
+        // Process each element
+        
+        // Degree 
+        
     }
 
     fin.close();
     return outp;
 }
 
-void printData(StringVector2D data, const size_t& numRows) {
 
-    size_t rowIdx = 0;
-    for (const std::vector<std::string>& row : data) {
+void printData(DoubleVector2D data, const size_t& numRows) {
+
+    size_t rowIdx = 1;
+    for (const std::vector<double>& row : data) {
 
         std::cout << "Row " << rowIdx << std::endl;
-        for (const std::string& elem : row) {
+        for (const double& elem : row) {
             std::cout << elem << " | ";
         }
         std::cout << std::endl << std::endl;
@@ -179,8 +179,6 @@ void printData(StringVector2D data, const size_t& numRows) {
     }
     return;
 }
-
-
 
 
 

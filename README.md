@@ -122,6 +122,13 @@
 - New lines are fucking with me :D
 - I may be done with this shit
 - idk, maybe I'll get a burst of motivation to do this
+- Ok, im tackling it again
+- Plan
+    - Read from the csv until we get a complete record
+    - Function will look really ugly
+    - Idea is to read the column headings, count them and process x amount of elements before appending a row
+- Ok fine, I concede, I will use an importing library
+- My function only barely works, and its extrememly slow
 
 
 
@@ -133,4 +140,5 @@
 ### References
 
 - Data set is from: [Cyber Security Attacks](https://www.kaggle.com/datasets/teamincribo/cyber-security-attacks?resource=download&select=cybersecurity_attacks.csv)
+- Library used to import csv files: [ben-strasser/fast-cpp-csv-parser: fast-cpp-csv-parser](https://github.com/ben-strasser/fast-cpp-csv-parser) 
 

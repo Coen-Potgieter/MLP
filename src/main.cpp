@@ -5,28 +5,18 @@
 void testGettersSetters();
 int main() {
 
-
-    /* std::string content = "180,902,18,Data,\"This is a, a String\",\"This is a \"\"Quoted String\"\"\",Last Elem"; */
-    /* std::vector<std::string> splittedRes = splitString(content, ','); */
-    /* std::cout << content << std::endl; */
-    /* for (const std::string& elem : splittedRes) { */
-    /*     std::cout << elem << " | "; */
-    /* } */
-    /* std::cout << std::endl; */
-    /* return 0; */
-    std::vector<std::vector<std::string>> data; 
+    DoubleVector2D data;
     try {
-         data = importCSV("data/cybersecurity_attacks.csv");
 
+        data = importCSV("data/CPSSW04.csv");
     } catch (const std::invalid_argument& e) {
         std::cerr << e.what() << std::endl;
         return 1;
-    } catch (const std::ios_base::failure& e) {
+    } catch (const std::ios::ios_base::failure& e) {
         std::cerr << e.what() << std::endl;
         return 1;
     }
-
-    printData(data, 10);
+    printData(data);
 
     return 0;
     std::vector<int> myStruct = { 3, 10, 5};

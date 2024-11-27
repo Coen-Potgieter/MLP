@@ -5,6 +5,15 @@
 void testGettersSetters();
 int main() {
 
+
+    /* std::string content = "180,902,18,Data,\"This is a, a String\",\"This is a \"\"Quoted String\"\"\",Last Elem"; */
+    /* std::vector<std::string> splittedRes = splitString(content, ','); */
+    /* std::cout << content << std::endl; */
+    /* for (const std::string& elem : splittedRes) { */
+    /*     std::cout << elem << " | "; */
+    /* } */
+    /* std::cout << std::endl; */
+    /* return 0; */
     std::vector<std::vector<std::string>> data; 
     try {
          data = importCSV("data/cybersecurity_attacks.csv");

@@ -113,9 +113,19 @@ void printMlpEnum(MLP::LossFunc inpEnum) {
 std::vector<std::string> splitString(const std::string& content, char delimiter) {
 
     std::vector<std::string> result;
+    std::string currLine;
+    size_t endQuotesConfirmation;
+    bool inQuotes = false;
     size_t start = 0, end = 0;
 
     while ((end = content.find(delimiter, start)) != std::string::npos) {
+
+        // Check if elem starts with a '"'
+        if (content.at(start) == '"') {
+            // If it does then find the last '"' 
+            end = content.find('"', start + 1);
+            end += 1;
+        }
         result.push_back(content.substr(start, end-start));
         start = end + 1;
     }

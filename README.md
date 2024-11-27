@@ -112,6 +112,16 @@
     - Right now, We are splitting each row by ','
     - This is bad since some string elements that are wrapped in "" has ',' in them
     - Need to ignore these
+    - Fix
+        - Have a separate flag to determine of the next element is in quotes
+        - If not then normal things
+        - If there are then handle it
+
+- Ok, I got things working, but it can't handle elements that have embedded quotes
+    - ie. an element that looks like this won't work: `12,14,3.2,"This is a ""Quoted"" Element",76,10`
+- New lines are fucking with me :D
+- I may be done with this shit
+- idk, maybe I'll get a burst of motivation to do this
 
 
 

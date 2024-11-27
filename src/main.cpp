@@ -1,8 +1,25 @@
 #include "mlp.h"
 #include "helperfuncs.h"
+#include <stdexcept>
 
 void testGettersSetters();
 int main() {
+
+    std::vector<std::vector<std::string>> data; 
+    try {
+         data = importCSV("data/cybersecurity_attacks.csv");
+
+    } catch (const std::invalid_argument& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    } catch (const std::ios_base::failure& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+
+    printData(data, 10);
+
+    return 0;
     std::vector<int> myStruct = { 3, 10, 5};
     MLP mlp(myStruct);
 

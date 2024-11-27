@@ -1,6 +1,9 @@
 
 
 #include "helperfuncs.h"
+#include <filesystem>
+#include <stdexcept>
+#include <string>
 
 void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
@@ -105,6 +108,66 @@ void printMlpEnum(MLP::LossFunc inpEnum) {
         default:
             std::cout << "Printing for this not implemented just yet, so get here and do it" << std::endl;
     }
+}
+
+std::vector<std::string> splitString(const std::string& content, char delimiter) {
+
+    std::vector<std::string> result;
+    size_t start = 0, end = 0;
+
+    while ((end = content.find(delimiter, start)) != std::string::npos) {
+        result.push_back(content.substr(start, end-start));
+        start = end + 1;
+    }
+    result.push_back(content.substr(start));
+    return result;
+}
+
+std::vector<std::vector<std::string>> importCSV(std::string_view pathToCSV) {
+
+    std::vector<std::vector<std::string>> outp;
+
+    // Check if input is a valid path to a csv
+    fs::path fp = pathToCSV;
+    if (fp.extension() != ".csv" || !fs::exists(fp)) {
+        throw std::invalid_argument("Error: Given File Path Does Not Point to a .csv File");
+    }
+
+    // Open File and throw error if fails
+    std::ifstream fin;
+    fin.open(pathToCSV);
+    if (!fin) {
+        throw std::ios_base::failure("Error: Could Not Open The File");
+    }
+
+    // Parse the file
+    std::string line;
+
+    while (std::getline(fin, line)) {
+        outp.push_back(splitString(line, ','));
+    }
+
+    fin.close();
+    return outp;
+}
+
+void printData(StringVector2D data, const size_t& numRows) {
+
+    size_t rowIdx = 0;
+    for (const std::vector<std::string>& row : data) {
+
+        std::cout << "Row " << rowIdx << std::endl;
+        for (const std::string& elem : row) {
+            std::cout << elem << " | ";
+        }
+        std::cout << std::endl << std::endl;
+
+        if (rowIdx == numRows) {
+            break;
+        }
+        rowIdx += 1;
+    }
+    return;
 }
 
 

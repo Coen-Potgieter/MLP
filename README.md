@@ -105,6 +105,14 @@
 - Need to learn how to import csv files
 - ffs learn file handling
 
+- Im back after 3 days, I undertsand how to do things but will do later
+- With the current functionallity, We cna import a csv into a 2d vector of strings
+- The idea is that we can now take in any csv and we need another function to process each element into the types we want
+- There is a problem
+    - Right now, We are splitting each row by ','
+    - This is bad since some string elements that are wrapped in "" has ',' in them
+    - Need to ignore these
+
 
 
 ### Possible improvements

@@ -141,25 +141,92 @@ DoubleVector2D importCSV(std::string_view pathToCSV) {
 
     std::string line;
     std::vector<std::string> row;
-    std::vector<double> procRow(4, -1);
 
     std::string possibleDegrees[] = { "bachelor", "highschool" };
-    size_t start = 0, end = 0;
 
     std::getline(fin, line);
     while (std::getline(fin, line)) {
 
+        std::vector<double> procRow(6, 0);
+
         row = separateRow(line);
         // Process each element
-        
-        // Degree 
-        
+       
+        // Populate Degree 
+        if (row[2] == "bachelor") {
+            procRow[0] = 1;
+        } else if (row[2] == "highschool") {
+            procRow[1] = 1;
+        } else {
+            std::cerr << "Degree: " << row[2] << " Is Not Accounted For" << std::endl;
+        }
+
+        // Populate Gender
+        if (row[3] == "male") {
+            procRow[2] = 1;
+        } else if (row[3] == "female") {
+            procRow[3] = 1;
+        } else {
+            std::cerr << "Gender: " << row[3] << " Is Not Accounted For" << std::endl;
+        }
+
+        // Populate Age
+        procRow[4] = std::stod(row[4]);
+
+        // Populate Earnings
+        procRow[5] = std::stod(row[1]);
+
+        outp.push_back(procRow);
     }
 
     fin.close();
     return outp;
 }
 
+// z-Score Normalisation
+void normaliseData(DoubleVector2D& data) {
+
+    // Get mean
+    double runningSum = 0;
+    const size_t numRows = data.size();
+    for (const std::vector<double>& row : data) {
+        runningSum += row[4];
+    }
+    double mean = runningSum / numRows;
+    /* std::cout << mean << std::endl; */
+
+    // Get Standard Dev
+    runningSum = 0;
+    for (const std::vector<double>& row : data) {
+        runningSum += (row[4] - mean) * (row[4] - mean);
+    }
+    double sd = std::sqrt(runningSum / (numRows - 1));
+
+    // Update each age value with mean and sd (I back i should avoid range based for loop? for clairty)
+    for (std::vector<double>& row : data) {
+        row[4] = (row[4] - mean) / sd;
+    }
+
+    return;
+
+
+}
+
+// Removes target from data and returns it 
+// Assumpution: Target col is last column in `data` matrix
+std::vector<double> separateTarget(DoubleVector2D& data) {
+
+    const size_t targetCol = data[0].size() - 1;
+    const size_t numRows = data.size();
+    std::vector<double> target(numRows, -1);
+
+    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++ ) {
+        target[rowIdx] = data[rowIdx][targetCol];
+        data[rowIdx].erase(data[rowIdx].begin() + targetCol);
+    }
+
+    return target;
+}
 
 void printData(DoubleVector2D data, const size_t& numRows) {
 
@@ -178,6 +245,44 @@ void printData(DoubleVector2D data, const size_t& numRows) {
         rowIdx += 1;
     }
     return;
+}
+
+// Taken From ChatGPT
+DoubleVector2D transpose(const DoubleVector2D& matrix) {
+    if (matrix.empty()) return {}; // Handle empty matrix
+
+    size_t numRows = matrix.size();
+    size_t numCols = matrix[0].size();
+
+    // Initialize a transposed matrix with swapped dimensions
+    std::vector<std::vector<double>> transposed(numCols, std::vector<double>(numRows));
+
+    // Fill the transposed matrix
+    for (size_t i = 0; i < numRows; ++i) {
+        for (size_t j = 0; j < numCols; ++j) {
+            transposed[j][i] = matrix[i][j];
+        }
+    }
+
+    return transposed;
+}
+
+DoubleVector2D sliceRows(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx) {
+
+    // Check for valid Idx Ranges
+    if ((startIdx > endIdx) || (endIdx >= inpMatrix.size())) {
+        throw std::invalid_argument("Error: Invalid Index Values Given");
+    }
+
+    DoubleVector2D outp(endIdx - startIdx + 1);
+
+
+    for (size_t idx = 0; idx <= endIdx; idx++) {
+        outp[idx] = inpMatrix[startIdx + idx];
+    }
+
+    return outp;
+
 }
 
 

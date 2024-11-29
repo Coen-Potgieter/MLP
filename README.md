@@ -129,6 +129,25 @@
     - Idea is to read the column headings, count them and process x amount of elements before appending a row
 - Ok fine, I concede, I will use an importing library
 - My function only barely works, and its extrememly slow
+- Decided to use a simple dataset with no weird edge cases
+- What Dataset looks like 
+    - rowIdx
+    - earnings
+    - Education Level: [ "bachelor", "highschool" ] 
+    - Gender: [ "male", "female" ]
+    - Age
+- What my `Data` looks like
+    - bachelor [ 0, 1 ]
+    - highschool [ 0, 1]
+    - male [ 0, 1]
+    - female [ 0, 1]
+    - age (z-score normalised)
+    - earnings (target)
+
+- Ok, everything works
+- Now time for backprop
+- Added functionality to transpose input for forward prop and now things should work fine
+- BackProp For real now
 
 
 
@@ -141,4 +160,6 @@
 
 - Data set is from: [Cyber Security Attacks](https://www.kaggle.com/datasets/teamincribo/cyber-security-attacks?resource=download&select=cybersecurity_attacks.csv)
 - Library used to import csv files: [ben-strasser/fast-cpp-csv-parser: fast-cpp-csv-parser](https://github.com/ben-strasser/fast-cpp-csv-parser) 
+- New DataSet: [vincentarelbundock.github.io/Rdatasets/datasets.html](https://vincentarelbundock.github.io/Rdatasets/datasets.html)
+    - CPSSW04.csv
 

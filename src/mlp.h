@@ -57,7 +57,7 @@ class MLP {
 
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
-        ForwardPropResult forwardProp(DoubleVector2D inpQuery) const;
+        ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;
         void backPropIteration(const DoubleVector2D& inpBatch);
         
         // Template

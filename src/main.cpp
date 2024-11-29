@@ -5,6 +5,9 @@
 void testGettersSetters();
 int main() {
 
+
+    /* std::string possibleDegrees[] = { "bachelor", "highschool" }; */
+    /* return 0; */
     DoubleVector2D data;
     try {
 
@@ -16,47 +19,19 @@ int main() {
         std::cerr << e.what() << std::endl;
         return 1;
     }
-    printData(data);
+    normaliseData(data);
+    std::vector<double> target = separateTarget(data);
 
-    return 0;
-    std::vector<int> myStruct = { 3, 10, 5};
+    std::vector<int> myStruct = { 5, 15, 10, 1};
     MLP mlp(myStruct);
 
-    /* std::vector<int> groundTruth = { 4, 1 }; */
-    /* std::vector<int> results = { 9, 1 }; */
-    std::vector<double> groundTruth = { 4.3, 1 };
-    std::vector<double> results = { 9.3, 1 };
-    double errors = mlp.calcAvgLoss(groundTruth, results);
-
-    std::cout << errors << std::endl;
-    return 0;
-    DoubleVector2D myInput = { {1,2,3,5}, {4,5,6,7}, {7,8,9,10} };
-
-    /* MLP mlp(myStruct); */
     mlp.initWeights(MLP::InitMethod::UNIFORM);
     mlp.initBias(MLP::InitMethod::UNIFORM, -10, 10);
 
-    // test constructor 
 
-/*     std::cout << mlp.getLR() << std::endl; */
-     
+    ForwardPropResult forwardRes = mlp.forwardProp(data);
+    printData(forwardRes.a[2]);
 
-    // test getters and setters
-    if (mlp.getLossFunc() == MLP::LossFunc::MSE) {
-        std::cout << "MSE" << std::endl;
-    } else if (mlp.getLossFunc() == MLP::LossFunc::ENTROPY) {
-        std::cout << "ENTROPY" << std::endl;
-    }
-
-    mlp.setLossFunc(MLP::LossFunc::ENTROPY);
-    if (mlp.getLossFunc() == MLP::LossFunc::MSE) {
-        std::cout << "MSE" << std::endl;
-    } else if (mlp.getLossFunc() == MLP::LossFunc::ENTROPY) {
-        std::cout << "ENTROPY" << std::endl;
-    }
-    /* std::cout << mlp.getLR() << std::endl; */
-
-    ForwardPropResult res = mlp.forwardProp(myInput);
 
 }
 

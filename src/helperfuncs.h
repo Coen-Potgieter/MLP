@@ -20,7 +20,12 @@ void printMlpEnum(MLP::ActFunc inpEnum);
 void printMlpEnum(MLP::LossFunc inpEnum);
 std::vector<std::string> separateRow(const std::string& content);
 DoubleVector2D importCSV(std::string_view pathToCSV);
+void normaliseData(DoubleVector2D& data);
 void printData(DoubleVector2D data, const size_t& numRows=0);
+std::vector<double> separateTarget(DoubleVector2D& data);
+DoubleVector2D transpose(const DoubleVector2D& matrix);
+DoubleVector2D sliceRows(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx);
+
 
 
 

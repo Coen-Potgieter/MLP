@@ -95,35 +95,38 @@ void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
 
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
-ForwardPropResult MLP::forwardProp(DoubleVector2D inpQuery) const {
+ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 
     DEBUG_LOG("Performing Forward Prop");
-    
-    // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
-    std::vector<double> row1s(inpQuery[0].size(), 1.0);
 
-    // Declare varables to store initermediate values (See README why its 3d)
+    // Declare varables to store initermediate values (See README why its 3D)
     DoubleVector3D z; 
     DoubleVector3D a; 
+
+    // Transpose our Input
+    DoubleVector2D inp = transpose(inpQuery);
+
+    // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
+    std::vector<double> row1s(inp[0].size(), 1.0);
 
     // Perform forward prop
     for (int layer = 0; layer < this->weights.size(); layer++){
 
-        // Pre-pad our inpQueryuts with row of 1s
-        inpQuery.insert(inpQuery.begin(), row1s);
+        // Pre-pad our inputs with row of 1s
+        inp.insert(inp.begin(), row1s);
 
         // For Debugging
-        DEBUG_LOG("`weights` Matrix * `inpQuery` Matrix: " 
+        DEBUG_LOG("`weights` Matrix * `inp` Matrix: " 
                 << this->weights[layer].size() << "x" << this->weights[layer][0].size()
-                << " * " << inpQuery.size() << "x" << inpQuery[0].size());
+                << " * " << inp.size() << "x" << inp[0].size());
 
-        // wieght matrix multipled with our inpQuery and store result
-        inpQuery = matrixMultiply(this->weights[layer], inpQuery);
-        z.push_back(inpQuery);
+        // wieght matrix multipled with our inp and store result
+        inp = matrixMultiply(this->weights[layer], inp);
+        z.push_back(inp);
 
         // apply activation function and store result
-        tanh(inpQuery);
-        a.push_back(inpQuery);
+        tanh(inp);
+        a.push_back(inp);
     }
 
     // Create an populate struct
@@ -135,11 +138,13 @@ ForwardPropResult MLP::forwardProp(DoubleVector2D inpQuery) const {
 
 void MLP::backPropIteration(const DoubleVector2D& inpBatch) {
 
-    // Forward prop run, then calc neuron differentials then can get weight update with those
-
+    // Forward prop run
     ForwardPropResult results = this->forwardProp(inpBatch);
 
 
+
+    // then calc neuron differentials 
+    // then can get weight update with those
 }
 
 

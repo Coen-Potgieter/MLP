@@ -58,7 +58,7 @@ class MLP {
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
         ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;
-        void backPropIteration(const DoubleVector2D& inpBatch);
+        void backPropIteration(const DoubleVector2D& inpBatch, const std::vector<double> target);
         
         // Template
         template <NumericVector Vec>
@@ -77,6 +77,7 @@ class MLP {
         template <NumericVector Vec>
         double calcAvgLoss(const Vec& groundTruth, const Vec& preds) const {
 
+            // Only supports MLE loss function
             const double numInstances = groundTruth.size();
             double runningSum = 0;
             for (int i = 0; i < numInstances; i++) {

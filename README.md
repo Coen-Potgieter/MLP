@@ -148,6 +148,11 @@
 - Now time for backprop
 - Added functionality to transpose input for forward prop and now things should work fine
 - BackProp For real now
+- I learnt fully how backprop works now
+    - This required a small change to forward prop
+    - We now save our itermediate outputs with an appended row of 1s for hidden layers
+        - That is z and a in hidden layers have pre-padded row of 1s
+        - Whereas z and a in output layer does not have pre-padded row od 1s
 
 
 

@@ -22,17 +22,24 @@ int main() {
     normaliseData(data);
     std::vector<double> target = separateTarget(data);
 
-    std::vector<int> myStruct = { 5, 15, 10, 1};
+    std::vector<int> myStruct = { 5, 3, 2};
     MLP mlp(myStruct);
 
     mlp.initWeights(MLP::InitMethod::UNIFORM);
     mlp.initBias(MLP::InitMethod::UNIFORM, -10, 10);
+    ForwardPropResult res = mlp.forwardProp(data);
 
 
-    ForwardPropResult forwardRes = mlp.forwardProp(data);
-    printData(forwardRes.a[2]);
-
-
+    std::cout << "Output Layer" << std::endl;
+    std::cout << "Num Rows: " << res.a[1].size() << std::endl;
+    std::cout << "Num Cols: " << res.a[1][0].size() << std::endl;
+    std::cout << std::endl << "Hidden Layer" << std::endl;
+    std::cout << "Num Rows: " << res.a[0].size() << std::endl;
+    std::cout << "Num Cols: " << res.a[0][0].size() << std::endl;
+    std::cout << "Num Rows: " << res.z[0].size() << std::endl;
+    std::cout << "Num Cols: " << res.z[0][0].size() << std::endl;
+    /* mlp.backPropIteration(data, target); */
+    return 0;
 }
 
 void testGettersSetters() {

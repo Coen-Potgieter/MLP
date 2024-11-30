@@ -108,12 +108,13 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 
     // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
     std::vector<double> row1s(inp[0].size(), 1.0);
+    const size_t numLayers = this->weights.size();
+
+    // Pred-pad our input with a row of 1s
+    inp.insert(inp.begin(), row1s);
 
     // Perform forward prop
-    for (int layer = 0; layer < this->weights.size(); layer++){
-
-        // Pre-pad our inputs with row of 1s
-        inp.insert(inp.begin(), row1s);
+    for (int layer = 0; layer < numLayers; layer++){
 
         // For Debugging
         DEBUG_LOG("`weights` Matrix * `inp` Matrix: " 
@@ -122,6 +123,11 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 
         // wieght matrix multipled with our inp and store result
         inp = matrixMultiply(this->weights[layer], inp);
+
+        // Save our Outputs with pre-padded row of 1s if not Output layer
+        if (layer != numLayers - 1) {
+            inp.insert(inp.begin(), row1s);
+        }
         z.push_back(inp);
 
         // apply activation function and store result
@@ -136,14 +142,17 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
     return results;
 }
 
-void MLP::backPropIteration(const DoubleVector2D& inpBatch) {
+void MLP::backPropIteration(const DoubleVector2D& inpBatch, const std::vector<double> target) {
 
     // Forward prop run
     ForwardPropResult results = this->forwardProp(inpBatch);
+    size_t numLayers = this->weights.size();
 
-
-
+    // Average Loss
+    double avgLoss = this->calcAvgLoss(target, results.a[numLayers - 1][0]);
     // then calc neuron differentials 
+
+
     // then can get weight update with those
 }
 

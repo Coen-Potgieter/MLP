@@ -142,7 +142,8 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
     return results;
 }
 
-void MLP::backPropIteration(const DoubleVector2D& inpBatch, const std::vector<double> target) {
+// See Obsidian Notes
+void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target) {
 
     // Forward prop run
     ForwardPropResult results = this->forwardProp(inpBatch);

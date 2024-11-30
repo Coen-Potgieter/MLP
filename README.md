@@ -102,6 +102,9 @@
 - change result param from calc loss function to predictions rather
 - functions to calcluate errors and average loss implemented
     - Right now they only do MSE
+    - They take in a matrix of ground truths and predictions (rows $\equiv$ output neurons, cols $\equiv$ examples)
+    - This means our output is a 1D of size equal to the number of ourput neurons
+    - Similar for avg loss for neuron differentials
 - Need to learn how to import csv files
 - ffs learn file handling
 
@@ -153,6 +156,7 @@
     - We now save our itermediate outputs with an appended row of 1s for hidden layers
         - That is z and a in hidden layers have pre-padded row of 1s
         - Whereas z and a in output layer does not have pre-padded row od 1s
+- Ok, updating avgLoss template function, do that first PLEASE
 
 
 

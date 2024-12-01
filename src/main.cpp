@@ -18,8 +18,17 @@ int main() {
         return 1;
     }
     normaliseData(data);
-    DoubleVector2D target = separateTarget(data);
 
+    // Separate data from targets
+    std::vector<int> targetCols = { 5 };
+    DoubleVector2D target;
+    try{
+        target = separateTarget(data, targetCols);
+    } catch (const std::invalid_argument& e) {
+        std::cerr << e.what() << std::endl;
+    }
+
+    // Create mlp object
     std::vector<int> myStruct = { 5, 3, 2};
     MLP mlp(myStruct);
 

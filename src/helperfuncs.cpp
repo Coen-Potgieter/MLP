@@ -2,9 +2,6 @@
 
 #include "helperfuncs.h"
 #include "mlp.h"
-#include <filesystem>
-#include <stdexcept>
-#include <string>
 
 void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
@@ -212,20 +209,36 @@ void normaliseData(DoubleVector2D& data) {
 
 }
 
-// Removes target from data and returns it 
-// Assumpution: Target col is last column in `data` matrix
-DoubleVector2D separateTarget(DoubleVector2D& data) {
+// Removes target from data and returns it as a matrix
+DoubleVector2D separateTarget(DoubleVector2D& data, std::vector<int>& targetCols) {
 
-    const size_t targetCol = data[0].size() - 1;
-    const size_t numRows = data.size();
-    DoubleVector2D target(numRows, -1);
-
-    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++ ) {
-        target[rowIdx] = data[rowIdx][targetCol];
-        data[rowIdx].erase(data[rowIdx].begin() + targetCol);
+    // Ensure targetCols are not empty
+    if (targetCols.size() <= 0) {
+        throw std::invalid_argument("List of target columns is empty");
+    }
+    // Ensure indicies are inside `targetCols` is within `data` columns
+    for (const int& targetIndex : targetCols) {
+        if ((targetIndex < 0) || (targetIndex >= data[0].size())){
+            throw std::invalid_argument("Indicies inside `targetCols` are out of range");
+        }
     }
 
-    return target;
+    const size_t numRows = data.size();
+    const size_t numTargets = targetCols.size();
+    DoubleVector2D targetOutput(numRows, std::vector<double>(numTargets));
+
+    // I need to sort the vector using this implementation
+    std::sort(targetCols.begin(), targetCols.end(), std::greater<int>());
+
+    size_t targetIdx = 0;
+    for (size_t targetCol : targetCols) {
+        for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++ ) {
+            targetOutput[rowIdx][targetIdx] = data[rowIdx][targetCol];
+            data[rowIdx].erase(data[rowIdx].begin() + targetCol);
+        }
+        targetIdx += 1;
+    }
+    return targetOutput;
 }
 
 void printData(DoubleVector2D data, const size_t& numRows) {

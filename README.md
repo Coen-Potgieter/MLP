@@ -162,6 +162,19 @@
 - They take in matrices for targets so i need to change my separateTarget() function to handle this
     - Maybe specify the columns where the target lives to create new matrix
 
+- `separateTarget()` works with some tech debt
+    - The order of the targets is ignored in the outputted matrix
+    - Instead the indicies are ordered in descending order
+    - So if our targetCols are [3, 6, 1] then, the output matrix will be [6, 3, 1]
+
+### Things to note as you develop Coenie
+
+- `data`
+    - Rows = Examples 
+    - Columns = Attributes
+- `separateTarget()`
+    - Note the order of columns (line
+
 ### Possible improvements
 
 - Change forward prop algo to handle bias calcs separaetey so we dont prepad the `inp` vector on each itteration

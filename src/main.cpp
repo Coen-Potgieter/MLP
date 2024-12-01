@@ -7,9 +7,9 @@ void testTemplateLossFuncs();
 int main() {
 
     // Import data
-    DoubleVector2D data;
+    DoubleVector2D importedData;
     try {
-        data = importCSV("data/CPSSW04.csv");
+        importedData = importCSV("data/CPSSW04.csv");
     } catch (const std::invalid_argument& e) {
         std::cerr << e.what() << std::endl;
         return 1;
@@ -17,27 +17,32 @@ int main() {
         std::cerr << e.what() << std::endl;
         return 1;
     }
-    normaliseData(data);
+    normaliseData(importedData);
 
     // Separate data from targets
     std::vector<int> targetCols = { 5 };
-    DoubleVector2D target;
+    DoubleVector2D targets;
     try{
-        target = separateTarget(data, targetCols);
+        targets = transpose(separateTarget(importedData, targetCols));
     } catch (const std::invalid_argument& e) {
         std::cerr << e.what() << std::endl;
+        return 1;
     }
+    DoubleVector2D data = transpose(importedData);
 
     // Create mlp object
-    std::vector<int> myStruct = { 5, 3, 2};
+    std::vector<int> myStruct = { 5, 20, 10, 1};
     MLP mlp(myStruct);
 
     // Initialise Weights and Bias
     mlp.initWeights(MLP::InitMethod::UNIFORM);
     mlp.initBias(MLP::InitMethod::UNIFORM, -10, 10);
 
-    /* mlp.singleBackPropItter(const DoubleVector2D &inpBatch, const DoubleVector2D target) */
-    /* mlp.backPropIteration(data, target); */
+    // TODO: when moving this to acutal function make sure this is inside try catch
+    DoubleVector2D data32 = sliceCols(data, 0, 31);
+    DoubleVector2D target32 = sliceCols(targets, 0, 31);
+
+    mlp.singleBackPropItter(data32, target32);
     return 0;
 }
 

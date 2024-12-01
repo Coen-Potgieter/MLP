@@ -6,6 +6,7 @@
 #include <utility>
 #include <concepts>
 #include "alias.h"
+#include "debug_log.h"
 
 struct ForwardPropResult {
     DoubleVector3D z; // Output of net function
@@ -67,6 +68,13 @@ class MLP {
 
             // Ensure both matrices are of same size
             if ((groundTruth.size() != preds.size()) || (groundTruth[0].size() != preds[0].size())){
+
+                DEBUG_LOG("\nExecuting calcLoss()");
+                DEBUG_LOG("`groundTruth` Dimensions: (" 
+                        << groundTruth.size() << ", " << groundTruth[0].size() << ")\n"
+                        << "`preds` Dimensions: ("
+                        << preds.size() << ", " << preds[0].size() << ")");
+
                 throw std::invalid_argument("`groundTruth` Matrix is not of same size as `preds` matrix");
             }
 
@@ -92,6 +100,12 @@ class MLP {
 
             // Ensure both matrices are of same size
             if ((groundTruth.size() != preds.size()) || (groundTruth[0].size() != preds[0].size())){
+
+                DEBUG_LOG("\nExecuting avgLossGradient()");
+                DEBUG_LOG("`groundTruth` Dimensions: (" 
+                        << groundTruth.size() << ", " << groundTruth[0].size() << ")\n"
+                        << "`preds` Dimensions: ("
+                        << preds.size() << ", " << preds[0].size() << ")");
                 throw std::invalid_argument("`groundTruth` Matrix is not of same size as `preds` matrix");
             }
 

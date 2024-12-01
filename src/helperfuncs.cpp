@@ -2,6 +2,7 @@
 
 #include "helperfuncs.h"
 #include "mlp.h"
+#include <stdexcept>
 
 void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
@@ -59,6 +60,26 @@ DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& 
         }
     }
     return outpMat;
+}
+
+DoubleVector2D elementWiseMatrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2) {
+
+    // Ensure they are the same size
+    if ((mat1.size() != mat2.size()) || (mat1[0].size() != mat2[0].size())) {
+        throw std::invalid_argument("`mat1` is not of same size as `mat2`");
+    }
+
+    // Create output matrix
+    const size_t numRows = mat1.size();
+    const size_t numCols = mat1[0].size();
+    DoubleVector2D outp(numRows, std::vector<double>(numCols));
+
+    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
+        for (size_t colIdx = 0; colIdx < numCols; colIdx++) {
+            outp[rowIdx][colIdx] = mat1[rowIdx][colIdx] * mat2[rowIdx][colIdx];
+        }
+    }
+    return outp;
 }
 
 void printMlpEnum(MLP::InitMethod inpEnum) {
@@ -280,24 +301,28 @@ DoubleVector2D transpose(const DoubleVector2D& matrix) {
     return transposed;
 }
 
-DoubleVector2D sliceRows(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx) {
+DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx) {
 
     // Check for valid Idx Ranges
-    if ((startIdx > endIdx) || (endIdx >= inpMatrix.size())) {
+    if ((startIdx > endIdx) || (endIdx >= inpMatrix[0].size())) {
         throw std::invalid_argument("Error: Invalid Index Values Given");
     }
+    const size_t numRows = inpMatrix.size();
+    DoubleVector2D outp(numRows, std::vector<double>(endIdx - startIdx + 1));
 
-    DoubleVector2D outp(endIdx - startIdx + 1);
-
-
-    for (size_t idx = 0; idx <= endIdx; idx++) {
-        outp[idx] = inpMatrix[startIdx + idx];
+    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
+        for (size_t colIdx = 0; colIdx <= endIdx; colIdx++) {
+            outp[rowIdx][colIdx] = inpMatrix[rowIdx][startIdx + colIdx];
+        }
     }
 
     return outp;
 
 }
 
+void printDims(const DoubleVector2D& mat) {
+    std::cout << "Dimensions: (" << mat.size() << "x" << mat[0].size() << ")" << std::endl;
+}
 
 
 

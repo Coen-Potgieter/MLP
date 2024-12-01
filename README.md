@@ -167,13 +167,21 @@
     - Instead the indicies are ordered in descending order
     - So if our targetCols are [3, 6, 1] then, the output matrix will be [6, 3, 1]
 
-### Things to note as you develop Coenie
+- Ok, Changed dimensions of data
+- Need to make functions for activations and their gradients
+
+### Things to note as you develop Coeni
 
 - `data`
-    - Rows = Examples 
-    - Columns = Attributes
+    - Rows = Attributes 
+    - Columns = rows
+    - Note that this was a late decision, so there is some weird initialisation stuffs with transposing
 - `separateTarget()`
-    - Note the order of columns (line
+    - Note the order of columns (line 165)
+- `calcLoss()`
+    - Returns a matrix such that we can perform aggregations how we like
+    - Inputs reuquire (Rows = output neurons, Cols = examples)
+- 
 
 ### Possible improvements
 

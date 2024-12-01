@@ -1,6 +1,5 @@
 #include "mlp.h"
 #include "helperfuncs.h"
-#include "debug_log.h"
 
 
 MLP::MLP(const std::vector<int>& inpStructure, const ActFunc inpHiddenLayerAct, const ActFunc inpOutputLayerAct, const LossFunc inpLossFunc, const float inpLR, const int inpDecayRate, const int inpBatchSize) {
@@ -104,7 +103,7 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
     DoubleVector3D a; 
 
     // Transpose our Input
-    DoubleVector2D inp = transpose(inpQuery);
+    DoubleVector2D inp = inpQuery;
 
     // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
     std::vector<double> row1s(inp[0].size(), 1.0);
@@ -151,9 +150,12 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
 
     DoubleVector2D preds = resForwardProp.a[numLayers-1];
 
-    std::cout << preds.size() << std::endl;
     // Average Loss Gradient
-    /* DoubleVector2D avgLossGradient = MLP::avgLossGradient(target, results) */
+    DoubleVector2D avgLossGrad = this->avgLossGradient(target, preds);
+    // Output Neuron Differentials
+    DoubleVector2D ouputNeuronDiff = elementWiseMatrixMultiply(avgLossGrad, )
+    
+
     // then calc neuron differentials 
 
 

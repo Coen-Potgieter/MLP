@@ -158,7 +158,9 @@
         - Whereas z and a in output layer does not have pre-padded row od 1s
 - Ok, updating avgLoss template function, do that first PLEASE
 
-
+- Loss functions and avg gradient functions i am now happy with. 
+- They take in matrices for targets so i need to change my separateTarget() function to handle this
+    - Maybe specify the columns where the target lives to create new matrix
 
 ### Possible improvements
 

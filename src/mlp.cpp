@@ -146,11 +146,14 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target) {
 
     // Forward prop run
-    ForwardPropResult results = this->forwardProp(inpBatch);
+    ForwardPropResult resForwardProp = this->forwardProp(inpBatch);
     size_t numLayers = this->weights.size();
 
-    // Average Loss
-    double avgLoss = this->calcAvgLoss(target, results.a[numLayers - 1][0]);
+    DoubleVector2D preds = resForwardProp.a[numLayers-1];
+
+    std::cout << preds.size() << std::endl;
+    // Average Loss Gradient
+    /* DoubleVector2D avgLossGradient = MLP::avgLossGradient(target, results) */
     // then calc neuron differentials 
 
 

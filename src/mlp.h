@@ -14,7 +14,7 @@ struct ForwardPropResult {
 
 // Concept for input param as either int vector or double vector
 template <typename T>
-concept NumericMatrix = std::same_as<T, DoubleVector2D> || std::same_as<T, DoubleVector2D> || std::same_as<T, FloatVector2D>;
+concept NumericMatrix = std::same_as<T, DoubleVector2D> || std::same_as<T, IntVector2D> || std::same_as<T, FloatVector2D>;
 
 class MLP {
 
@@ -63,44 +63,49 @@ class MLP {
         
         // Template
         template <NumericMatrix Mat>
-        std::vector<double> calcLoss(const Mat& groundTruth, const Mat& preds) const {
-
-            // SSE loss function
-            const int numInstances = groundTruth[0].size();
-            const int numNeurons = groundTruth.size();
-            std::vector<double> neuronLosses(numNeurons);
-            double diff;
-            double runningLoss;
-            for (size_t neuronIdx = 0; neuronIdx < numNeurons; neuronIdx++){
-                runningLoss = 0;
-                for (size_t exampleIdx = 0; exampleIdx < numInstances; exampleIdx++) {
-                    diff = groundTruth[neuronIdx][exampleIdx] - preds[neuronIdx][exampleIdx];
-                    runningLoss += 0.5 * diff * diff;
-                }
-                neuronLosses[neuronIdx] = runningLoss / numInstances;
-            }
-            return neuronLosses;
-        }
-
-        template <NumericMatrix Mat>
-        DoubleVector2D avgLoss(const Mat& groundTruth, const Mat& preds) const {
+        DoubleVector2D calcLoss(const Mat& groundTruth, const Mat& preds) const {
 
             // Ensure both matrices are of same size
             if ((groundTruth.size() != preds.size()) || (groundTruth[0].size() != preds[0].size())){
                 throw std::invalid_argument("`groundTruth` Matrix is not of same size as `preds` matrix");
             }
 
-            // Only supports MLE loss function
-            const double numInstances = groundTruth[0].size();
-            DoubleVector2D outp(groundTruth.size(), groundTruth[0].size());
-            std::cout << outp.size() << std::endl;
-            std::cout << outp[0].size() << std::endl;
+            // SSE loss function
+            const int numNeurons = groundTruth.size();
+            const int numInstances = groundTruth[0].size();
 
-            double runningSum = 0;
-            for (int i = 0; i < numInstances; i++) {
-                runningSum += preds[i] - groundTruth[i];
+            // Initialise Output size 
+            DoubleVector2D outputLoss(numNeurons, std::vector<double>(numInstances));
+
+            double diff;
+            for (size_t neuronIdx = 0; neuronIdx < numNeurons; neuronIdx++){
+                for (size_t exampleIdx = 0; exampleIdx < numInstances; exampleIdx++) {
+                    diff = groundTruth[neuronIdx][exampleIdx] - preds[neuronIdx][exampleIdx];
+                    outputLoss[neuronIdx][exampleIdx] = 0.5 * diff * diff;
+                }
             }
-            return runningSum / numInstances;
+            return outputLoss;
+        }
+
+        template <NumericMatrix Mat>
+        DoubleVector2D avgLossGradient(const Mat& groundTruth, const Mat& preds) const {
+
+            // Ensure both matrices are of same size
+            if ((groundTruth.size() != preds.size()) || (groundTruth[0].size() != preds[0].size())){
+                throw std::invalid_argument("`groundTruth` Matrix is not of same size as `preds` matrix");
+            }
+
+            // Only supports SSE loss function
+            const double numNeurons = groundTruth.size();
+            const double numInstances = groundTruth[0].size();
+            DoubleVector2D outputGrad(numNeurons, std::vector<double>(numInstances));
+
+            for (size_t neuronIdx = 0; neuronIdx < numNeurons; neuronIdx++) {
+                for (size_t exampleIdx = 0; exampleIdx < numInstances; exampleIdx++) {
+                    outputGrad[neuronIdx][exampleIdx] = (preds[neuronIdx][exampleIdx] - groundTruth[neuronIdx][exampleIdx]) / numInstances;
+                }
+            }
+            return outputGrad;
         }
 
     private:

@@ -214,11 +214,11 @@ void normaliseData(DoubleVector2D& data) {
 
 // Removes target from data and returns it 
 // Assumpution: Target col is last column in `data` matrix
-std::vector<double> separateTarget(DoubleVector2D& data) {
+DoubleVector2D separateTarget(DoubleVector2D& data) {
 
     const size_t targetCol = data[0].size() - 1;
     const size_t numRows = data.size();
-    std::vector<double> target(numRows, -1);
+    DoubleVector2D target(numRows, -1);
 
     for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++ ) {
         target[rowIdx] = data[rowIdx][targetCol];

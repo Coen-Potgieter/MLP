@@ -3,14 +3,12 @@
 #include <stdexcept>
 
 void testGettersSetters();
+void testTemplateLossFuncs();
 int main() {
 
-
-    /* std::string possibleDegrees[] = { "bachelor", "highschool" }; */
-    /* return 0; */
+    // Import data
     DoubleVector2D data;
     try {
-
         data = importCSV("data/CPSSW04.csv");
     } catch (const std::invalid_argument& e) {
         std::cerr << e.what() << std::endl;
@@ -20,24 +18,16 @@ int main() {
         return 1;
     }
     normaliseData(data);
-    std::vector<double> target = separateTarget(data);
+    DoubleVector2D target = separateTarget(data);
 
     std::vector<int> myStruct = { 5, 3, 2};
     MLP mlp(myStruct);
 
+    // Initialise Weights and Bias
     mlp.initWeights(MLP::InitMethod::UNIFORM);
     mlp.initBias(MLP::InitMethod::UNIFORM, -10, 10);
-    ForwardPropResult res = mlp.forwardProp(data);
 
-
-    std::cout << "Output Layer" << std::endl;
-    std::cout << "Num Rows: " << res.a[1].size() << std::endl;
-    std::cout << "Num Cols: " << res.a[1][0].size() << std::endl;
-    std::cout << std::endl << "Hidden Layer" << std::endl;
-    std::cout << "Num Rows: " << res.a[0].size() << std::endl;
-    std::cout << "Num Cols: " << res.a[0][0].size() << std::endl;
-    std::cout << "Num Rows: " << res.z[0].size() << std::endl;
-    std::cout << "Num Cols: " << res.z[0][0].size() << std::endl;
+    /* mlp.singleBackPropItter(const DoubleVector2D &inpBatch, const DoubleVector2D target) */
     /* mlp.backPropIteration(data, target); */
     return 0;
 }
@@ -91,3 +81,65 @@ void testGettersSetters() {
     mlp.setBatchSize(10);
     std::cout << mlp.getBatchSize() << std::endl;
 }
+
+void testTemplateLossFuncs() {
+
+    std::vector<int> myStruct;
+    myStruct = { 5, 10, 3 };
+    MLP mlp(myStruct);
+
+    /* IntVector2D target(3, std::vector<int>(3)); */
+    /* IntVector2D preds(3, std::vector<int>(3)); */
+    DoubleVector2D target(3, std::vector<double>(3));
+    DoubleVector2D preds(3, std::vector<double>(3));
+    /* FloatVector2D target(3, std::vector<float>(3)); */
+    /* FloatVector2D preds(3, std::vector<float>(3)); */
+
+    target[0][0] = 3;
+    target[1][0] = 4;
+    target[2][0] = 5;
+    target[0][1] = 6;
+    target[1][1] = 7;
+    target[2][1] = 8;
+    target[0][2] = 9;
+    target[1][2] = 10;
+    target[2][2] = 11;
+
+    preds[0][0] = 4;
+    preds[1][0] = 5;
+    preds[2][0] = 5;
+    preds[0][1] = 6;
+    preds[1][1] = 8;
+    preds[2][1] = 9;
+    preds[0][2] = 8;
+    preds[1][2] = 12;
+    preds[2][2] = 15;
+
+    DoubleVector2D loss;
+    loss = mlp.calcLoss(target, preds);
+    
+    for (const std::vector<double>& row : loss) {
+        for (const double& elem : row) {
+            std::cout << elem << std::endl;
+        }
+    }
+
+    std::cout << std::endl << std::endl;
+    DoubleVector2D lossGradient;
+    lossGradient = mlp.avgLossGradient(target, preds);
+    
+    for (const std::vector<double>& row : lossGradient) {
+        for (const double& elem : row) {
+            std::cout << elem << std::endl;
+        }
+    }
+}
+
+
+
+
+
+
+
+
+

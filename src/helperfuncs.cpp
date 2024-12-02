@@ -1,5 +1,3 @@
-
-
 #include "helperfuncs.h"
 #include "mlp.h"
 #include <stdexcept>
@@ -13,22 +11,32 @@ void printMatrix(const DoubleVector2D& mat) {
         std::cout << std::endl; // New line after each row
     }
 }
+void printDims(const DoubleVector2D& mat) {
+    std::cout << "Dimensions: (" << mat.size() << "x" << mat[0].size() << ")" << std::endl;
+}
 
-void sigmoid(DoubleVector2D& mat) {
-    for (std::vector<double>& row : mat) {
-        for (double& elem : row) {
-            // Sigmoid on each elemement
-            elem = 1.0 / (1.0 + std::exp(-elem)); 
-        }
+double relu(const double& z) {
+    if (z < 0) {
+        return 0;
+    } else {
+        return z;
     }
 }
-void tanh(DoubleVector2D& mat) {
-    for (std::vector<double>& row : mat) {
-        for (double& elem : row) {
-            // Tanh on each elemement
-            elem = 2 / (1 + std::exp(-2*elem)) - 1;
-        }
+
+double tanh(const double& z) { 
+    return (std::exp(z) - std::exp(-z)) / (std::exp(z) + std::exp(-z));
+}
+
+double derivativeRelu(const double& z) {
+    if (z < 0) {
+        return 0;
+    } else {
+        return 1;
     }
+}
+double derivativeTanh(const double& z) {
+    const double der = tanh(z);
+    return 1 - der * der;
 }
 
 DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2) {
@@ -320,9 +328,6 @@ DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx,
 
 }
 
-void printDims(const DoubleVector2D& mat) {
-    std::cout << "Dimensions: (" << mat.size() << "x" << mat[0].size() << ")" << std::endl;
-}
 
 
 

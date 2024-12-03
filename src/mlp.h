@@ -63,6 +63,7 @@ class MLP {
 
         // Helper Functions
         void applyActivation(DoubleVector2D& Z, const size_t layer) const;
+        void applyGradientActivation(DoubleVector2D& Z, const size_t layer) const;
 
         // Main Functions
         ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;

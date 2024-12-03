@@ -144,6 +144,56 @@ void MLP::applyActivation(DoubleVector2D& Z, const size_t layer) const {
     }
     return;
 }
+void MLP::applyGradientActivation(DoubleVector2D& Z, const size_t layer) const {
+
+    // Ensure `Z` is not empty
+    if (Z.empty()) {
+        throw std::invalid_argument("`Z` is empty");
+        return;
+    }
+
+    const size_t numLayers = this->weights.size();
+    // Ensure valid `layer` argument
+    if (layer >= numLayers) {
+        throw std::invalid_argument("`layer` is out of valid layer range");
+        return;
+    }
+
+    // Based on `layer` choose which act func to use
+    MLP::ActFunc actFuncToUse;
+    if (layer == (numLayers -1)) {
+        actFuncToUse = this->getOutputLayerAct();
+    } else {
+        actFuncToUse = this->getHiddenLayerAct();
+    }
+
+    // Set up function pointer
+    double (*actFuncPtr)(const double);
+    switch(actFuncToUse) {
+        case MLP::ActFunc::SIGMOID:
+            actFuncPtr = &derivativeSigmoid;
+            break;
+        case MLP::ActFunc::TANH:
+            actFuncPtr = &derivativeTanh;
+            break;
+        case MLP::ActFunc::RELU:
+            actFuncPtr = &derivativeRelu;
+            break;
+        case MLP::ActFunc::ELU:
+            actFuncPtr = &derivativeElu;
+            break;
+        default:
+            throw std::logic_error("Activation Function Has Not Yet Been Implemented");
+    }
+
+    // Apply Activation Function to each element
+    for (std::vector<double>& row : Z) {
+        for (double& elem : row) {
+            elem = actFuncPtr(elem);
+        }
+    }
+    return;
+}
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
 ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
@@ -196,19 +246,39 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 // See Obsidian Notes
 void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target) {
 
-    // Forward prop run
-    ForwardPropResult resForwardProp = this->forwardProp(inpBatch);
+    // Create 3 matrcies to store nueron differentials, weight updates
     size_t numLayers = this->weights.size();
+    DoubleVector3D weightUpdates(numLayers);
 
-    DoubleVector2D preds = resForwardProp.a[numLayers-1];
-
-    // Average Loss Gradient
-    DoubleVector2D avgLossGrad = this->avgLossGradient(target, preds);
-    // Output Neuron Differentials
-    /* DoubleVector2D ouputNeuronDiff = elementWiseMatrixMultiply(avgLossGrad, ) */
+    DoubleVector2D layerDifferentials;
+    DoubleVector2D tmpLayerDifferentials;
     
+    // Forward Prop run
+    ForwardPropResult resForwardProp = this->forwardProp(inpBatch);
 
+    for (int layer = numLayers - 1; layer >= 0; layer--) {
+
+        // Apply activation Gradient
+        applyGradientActivation(resForwardProp.z[layer], layer);
+
+        // Output Layer
+        if (layer == (numLayers -1)){
+            // Average Loss Gradient
+            neuronDiffTmp = this->avgLossGradient(target, resForwardProp.a[layer]);
+        } else {
+            neuronDiffTmp = matrixMultiply(transpose(this->weights[layer+1]), neuronDiff[layer+1]);
+        }
+        neuronDiff[layer].push_back(elementWiseMatrixMultiply(neuronDiffTmp, resForwardProp.z[layer]));
+
+
+    }
+    return;
+
+
+    // Output Neuron Differentials
+    
     // then calc neuron differentials 
+    
 
 
     // then can get weight update with those

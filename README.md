@@ -170,6 +170,11 @@
 - Ok, Changed dimensions of data
 - Need to make functions for activations and their gradients
 
+- THINK ABOUT
+    - Does the 1s get gradient function treatment? does it matter with the current acti funcs?
+        - As in maybe an input of 1 returns a 1?
+    - I wanna eat now so not doing this now
+
 ### Things to note as you develop Coeni
 
 - `data`
@@ -190,6 +195,8 @@
     - LR = 0.1
     - DecayRate = 0
     - BatchSize = 32
+- Both `applyActivation()` and `applyGradientAct()` alters the input matrix
+    - This could be the root of some bugs so just note this
 
 ### Possible improvements
 

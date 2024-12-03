@@ -186,12 +186,18 @@ void MLP::applyGradientActivation(DoubleVector2D& Z, const size_t layer) const {
             throw std::logic_error("Activation Function Has Not Yet Been Implemented");
     }
 
-    // Apply Activation Function to each element
-    for (std::vector<double>& row : Z) {
-        for (double& elem : row) {
+
+    // Apply Activation Function to each element, also skip row of 1s if not last layer
+    const size_t numRows = Z.size();
+    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++){
+        if (layer != (numLayers - 1) && (rowIdx == 0)){
+            continue;
+        }
+        for (double& elem : Z[rowIdx]) {
             elem = actFuncPtr(elem);
         }
     }
+
     return;
 }
 
@@ -204,7 +210,7 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
     DoubleVector3D z; 
     DoubleVector3D a; 
 
-    // Transpose our Input
+    // Make a copy of our input
     DoubleVector2D inp = inpQuery;
 
     // Row of 1s delcared outside of the for loop since row it is consistent for all iterations
@@ -246,32 +252,55 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 // See Obsidian Notes
 void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target) {
 
+    DEBUG_LOG("Performing BackProp");
+
     // Create 3 matrcies to store nueron differentials, weight updates
     size_t numLayers = this->weights.size();
     DoubleVector3D weightUpdates(numLayers);
 
-    DoubleVector2D layerDifferentials;
+    DoubleVector3D layerDifferentials(numLayers);
     DoubleVector2D tmpLayerDifferentials;
     
     // Forward Prop run
     ForwardPropResult resForwardProp = this->forwardProp(inpBatch);
 
+    // pre-pad our input with 1s for later use
+    DoubleVector2D prepaddedInp = inpBatch;
+    std::vector<double> row1s(prepaddedInp[0].size(), 1.0);
+    prepaddedInp.insert(prepaddedInp.begin(), row1s);
+
     for (int layer = numLayers - 1; layer >= 0; layer--) {
 
+        DEBUG_LOG("BackProp for Layer: " << layer);
         // Apply activation Gradient
         applyGradientActivation(resForwardProp.z[layer], layer);
 
         // Output Layer
         if (layer == (numLayers -1)){
             // Average Loss Gradient
-            neuronDiffTmp = this->avgLossGradient(target, resForwardProp.a[layer]);
+            tmpLayerDifferentials = this->avgLossGradient(target, resForwardProp.a[layer]);
         } else {
-            neuronDiffTmp = matrixMultiply(transpose(this->weights[layer+1]), neuronDiff[layer+1]);
+            tmpLayerDifferentials = matrixMultiply(transpose(this->weights[layer+1]), layerDifferentials[layer+1]);
         }
-        neuronDiff[layer].push_back(elementWiseMatrixMultiply(neuronDiffTmp, resForwardProp.z[layer]));
+        std::cout << "HERE THE PROBLEM??" << std::endl;
+        layerDifferentials[layer] = elementWiseMatrixMultiply(tmpLayerDifferentials, resForwardProp.z[layer]);
 
-
+        // Compute wieght differentials as well
+        if (layer == 0) {
+            std::cout << layerDifferentials[layer].size() << "x" << layerDifferentials[layer][0].size() << std::endl;
+            std::cout << prepaddedInp.size() << "x" << layerDifferentials[0].size() << std::endl;
+            weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(prepaddedInp));
+        } else {
+            weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(resForwardProp.a[layer-1]));
+        }
     }
+
+    std::cout << this->weights.size() << " | " << weightUpdates.size() << std::endl;
+    std::cout << this->weights[0].size() << " | " << weightUpdates[0].size() << std::endl;
+    std::cout << this->weights[0][0].size() << " | " << weightUpdates[0][0].size() << std::endl;
+
+
+
     return;
 
 

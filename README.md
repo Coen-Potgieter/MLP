@@ -173,7 +173,10 @@
 - THINK ABOUT
     - Does the 1s get gradient function treatment? does it matter with the current acti funcs?
         - As in maybe an input of 1 returns a 1?
+        - Answer is no
     - I wanna eat now so not doing this now
+    - Final, the pre-padded 1s should not be run through the gradient activation function so changing to that
+    - this might be the cause of some bugs so come back here if something goes wrong
 
 ### Things to note as you develop Coeni
 

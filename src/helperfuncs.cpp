@@ -1,4 +1,5 @@
 #include "helperfuncs.h"
+#include "debug_log.h"
 #include "mlp.h"
 #include <stdexcept>
 
@@ -63,6 +64,8 @@ DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& 
 
     // Ensure that dimensions are correct (mat1 cols == mat2 rows)
     if (mat1[0].size() != mat2.size()){
+        DEBUG_LOG("Dims of `mat1`: " << mat1.size() << "x" << mat1[0].size() <<
+                " | Dims of `mat2`: " << mat2.size() << "x" << mat2[0].size());
         throw std::invalid_argument("Number of columns in mat1 must be eqaul to the number of rows in mat2");
     }
 

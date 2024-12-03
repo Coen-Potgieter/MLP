@@ -57,12 +57,18 @@ class MLP {
         void setDecayRate(const int newDecayRate);
         void setBatchSize(const int newBatchSize);
 
+        // Initialisation Functions
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
+
+        // Helper Functions
+        void applyActivation(DoubleVector2D& Z, const size_t layer) const;
+
+        // Main Functions
         ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;
         void singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target);
         
-        // Template
+        // Template For Loss Functions, See README or obsidian notes
         template <NumericMatrix Mat>
         DoubleVector2D calcLoss(const Mat& groundTruth, const Mat& preds) const {
 

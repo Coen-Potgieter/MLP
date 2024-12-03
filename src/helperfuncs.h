@@ -12,15 +12,19 @@
 
 namespace fs = std::filesystem;
 
+// Helper Funcs for Debugging
 void printMatrix(const DoubleVector2D& mat);
 void printDims(const DoubleVector2D& mat);
 
-// Activations
-double relu(const double& z);
-double tanh(const double& z);
-double derivativeRelu(const double& z);
-double derivativeTanh(const double& z);
-DoubleVector2D matrixActivation(const DoubleVector2D& Z);
+// Activations And Gradients
+double relu(const double z);
+double tanh(const double z);
+double sigmoid(const double z);
+double elu(const double z);
+double derivativeRelu(const double z);
+double derivativeTanh(const double z);
+double derivativeSigmoid(const double z);
+double derivativeElu(const double z);
 DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
 DoubleVector2D elementWiseMatrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
 void printMlpEnum(MLP::InitMethod inpEnum);

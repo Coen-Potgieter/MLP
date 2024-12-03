@@ -181,7 +181,15 @@
 - `calcLoss()`
     - Returns a matrix such that we can perform aggregations how we like
     - Inputs reuquire (Rows = output neurons, Cols = examples)
-- 
+- `elu()` activation function is using a backed in aplha value of 1
+    - This was done to make function pointers simpler
+- Default `MLP` constructor
+    - HiddenLayerActFunc = RELU
+    - OutputLayerActFunc = SIGMOID
+    - Loss Function = MSE
+    - LR = 0.1
+    - DecayRate = 0
+    - BatchSize = 32
 
 ### Possible improvements
 

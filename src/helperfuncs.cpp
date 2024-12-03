@@ -6,7 +6,7 @@ void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
         for (const double& elem : row) {
             // Adjust the width for better alignment
-            std::cout << std::setw(8) << elem << " ";
+            std::cout << " | " << elem;
         }
         std::cout << std::endl; // New line after each row
     }
@@ -15,28 +15,48 @@ void printDims(const DoubleVector2D& mat) {
     std::cout << "Dimensions: (" << mat.size() << "x" << mat[0].size() << ")" << std::endl;
 }
 
-double relu(const double& z) {
+// Activations And Gradients
+double relu(const double z) {
     if (z < 0) {
         return 0;
     } else {
         return z;
     }
 }
-
-double tanh(const double& z) { 
+double tanh(const double z) { 
     return (std::exp(z) - std::exp(-z)) / (std::exp(z) + std::exp(-z));
 }
-
-double derivativeRelu(const double& z) {
+double sigmoid(const double z) {
+    return 1 / (1 + std::exp(-z)); 
+}
+double elu(const double z) {
+    if (z > 0) {
+        return z;
+    } else {
+        return std::exp(z) - 1;
+    }
+}
+double derivativeRelu(const double z) {
     if (z < 0) {
         return 0;
     } else {
         return 1;
     }
 }
-double derivativeTanh(const double& z) {
-    const double der = tanh(z);
-    return 1 - der * der;
+double derivativeTanh(const double z) {
+    const double intermediateVal = tanh(z);
+    return 1 - intermediateVal * intermediateVal;
+}
+double derivativeSigmoid(const double z) {
+    const double intermediateVal = sigmoid(z);
+    return intermediateVal * ( 1- intermediateVal);
+}
+double derivativeElu(const double z) {
+    if (z > 0){
+        return 1;
+    } else {
+        return std::exp(z);
+    }
 }
 
 DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2) {

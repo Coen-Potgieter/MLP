@@ -1,5 +1,7 @@
 #include "mlp.h"
 #include "helperfuncs.h"
+#include <cmath>
+#include <stdexcept>
 
 
 MLP::MLP(const std::vector<int>& inpStructure, const ActFunc inpHiddenLayerAct, const ActFunc inpOutputLayerAct, const LossFunc inpLossFunc, const float inpLR, const int inpDecayRate, const int inpBatchSize) {
@@ -92,6 +94,56 @@ void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
     }
 }
 
+void MLP::applyActivation(DoubleVector2D& Z, const size_t layer) const {
+
+    // Ensure `Z` is not empty
+    if (Z.empty()) {
+        throw std::invalid_argument("`Z` is empty");
+        return;
+    }
+
+    const size_t numLayers = this->weights.size();
+    // Ensure valid `layer` argument
+    if (layer >= numLayers) {
+        throw std::invalid_argument("`layer` is out of valid layer range");
+        return;
+    }
+
+    // Based on `layer` choose which act func to use
+    MLP::ActFunc actFuncToUse;
+    if (layer == (numLayers -1)) {
+        actFuncToUse = this->getOutputLayerAct();
+    } else {
+        actFuncToUse = this->getHiddenLayerAct();
+    }
+
+    // Set up function pointer
+    double (*actFuncPtr)(const double);
+    switch(actFuncToUse) {
+        case MLP::ActFunc::SIGMOID:
+            actFuncPtr = &sigmoid;
+            break;
+        case MLP::ActFunc::TANH:
+            actFuncPtr = &tanh;
+            break;
+        case MLP::ActFunc::RELU:
+            actFuncPtr = &relu;
+            break;
+        case MLP::ActFunc::ELU:
+            actFuncPtr = &elu;
+            break;
+        default:
+            throw std::logic_error("Activation Function Has Not Yet Been Implemented");
+    }
+
+    // Apply Activation Function to each element
+    for (std::vector<double>& row : Z) {
+        for (double& elem : row) {
+            elem = actFuncPtr(elem);
+        }
+    }
+    return;
+}
 
 // Version 1, might change this to handle biases differently instead of always appending a vector of 1s (this may be slower)
 ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
@@ -130,7 +182,7 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
         z.push_back(inp);
 
         // apply activation function and store result
-        tanh(inp);
+        applyActivation(inp, layer);
         a.push_back(inp);
     }
 
@@ -153,7 +205,7 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
     // Average Loss Gradient
     DoubleVector2D avgLossGrad = this->avgLossGradient(target, preds);
     // Output Neuron Differentials
-    DoubleVector2D ouputNeuronDiff = elementWiseMatrixMultiply(avgLossGrad, )
+    /* DoubleVector2D ouputNeuronDiff = elementWiseMatrixMultiply(avgLossGrad, ) */
     
 
     // then calc neuron differentials 

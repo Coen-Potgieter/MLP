@@ -178,6 +178,17 @@
     - Final, the pre-padded 1s should not be run through the gradient activation function so changing to that
     - this might be the cause of some bugs so come back here if something goes wrong
 
+- I think it worked
+- Things changed
+    - Forward prop result returns no prepadding for Z
+    - But pre-padded row of 1s for A's that are not output layer
+- Backprop
+    - See Obsidian notes
+    - But some things of note
+        - Weights are spearated from bias column before calcs
+        - A's are prepadded from forward prop
+        - input is also prepadded since this is an A matrix in the 0th layer (not output layer)
+
 ### Things to note as you develop Coeni
 
 - `data`

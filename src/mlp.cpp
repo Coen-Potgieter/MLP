@@ -187,13 +187,9 @@ void MLP::applyGradientActivation(DoubleVector2D& Z, const size_t layer) const {
     }
 
 
-    // Apply Activation Function to each element, also skip row of 1s if not last layer
-    const size_t numRows = Z.size();
-    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++){
-        if (layer != (numLayers - 1) && (rowIdx == 0)){
-            continue;
-        }
-        for (double& elem : Z[rowIdx]) {
+    // Apply Activation Gradient to each element
+    for (std::vector<double>& row : Z) {
+        for (double& elem : row) {
             elem = actFuncPtr(elem);
         }
     }
@@ -223,6 +219,7 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
     // Perform forward prop
     for (int layer = 0; layer < numLayers; layer++){
 
+
         // For Debugging
         DEBUG_LOG("`weights` Matrix * `inp` Matrix: " 
                 << this->weights[layer].size() << "x" << this->weights[layer][0].size()
@@ -231,14 +228,15 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
         // wieght matrix multipled with our inp and store result
         inp = matrixMultiply(this->weights[layer], inp);
 
-        // Save our Outputs with pre-padded row of 1s if not Output layer
-        if (layer != numLayers - 1) {
-            inp.insert(inp.begin(), row1s);
-        }
         z.push_back(inp);
 
         // apply activation function and store result
         applyActivation(inp, layer);
+
+        // Pred-pad our input with a row of 1s
+        if (layer != (numLayers - 1)){
+            inp.insert(inp.begin(), row1s);
+        }
         a.push_back(inp);
     }
 
@@ -264,10 +262,14 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
     // Forward Prop run
     ForwardPropResult resForwardProp = this->forwardProp(inpBatch);
 
-    // pre-pad our input with 1s for later use
-    DoubleVector2D prepaddedInp = inpBatch;
-    std::vector<double> row1s(prepaddedInp[0].size(), 1.0);
-    prepaddedInp.insert(prepaddedInp.begin(), row1s);
+    // Separate Weights from Biases
+    DoubleVector3D onlyWeights(numLayers);
+
+    // PrePad our input with layer of 1s for later use
+    DoubleVector2D inp = inpBatch;
+    std::vector<double> row1s(inp[0].size(), 1.0);
+    inp.insert(inp.begin(), row1s);
+
 
     for (int layer = numLayers - 1; layer >= 0; layer--) {
 
@@ -275,42 +277,37 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
         // Apply activation Gradient
         applyGradientActivation(resForwardProp.z[layer], layer);
 
+        // Get Current Weights
+        onlyWeights[layer] = sliceCols(this->weights[layer], 1, this->weights[layer][0].size() -1);
+
         // Output Layer
-        if (layer == (numLayers -1)){
+        if (layer == (numLayers - 1)){
             // Average Loss Gradient
             tmpLayerDifferentials = this->avgLossGradient(target, resForwardProp.a[layer]);
         } else {
-            tmpLayerDifferentials = matrixMultiply(transpose(this->weights[layer+1]), layerDifferentials[layer+1]);
+            tmpLayerDifferentials = matrixMultiply(transpose(onlyWeights[layer + 1]), layerDifferentials[layer+1]);
         }
-        std::cout << "HERE THE PROBLEM??" << std::endl;
         layerDifferentials[layer] = elementWiseMatrixMultiply(tmpLayerDifferentials, resForwardProp.z[layer]);
 
-        // Compute wieght differentials as well
+
+        // Neuron Differentials Done, now we can do weight and bias updates
         if (layer == 0) {
-            std::cout << layerDifferentials[layer].size() << "x" << layerDifferentials[layer][0].size() << std::endl;
-            std::cout << prepaddedInp.size() << "x" << layerDifferentials[0].size() << std::endl;
-            weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(prepaddedInp));
+            weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(inp));
         } else {
             weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(resForwardProp.a[layer-1]));
         }
+
     }
 
-    std::cout << this->weights.size() << " | " << weightUpdates.size() << std::endl;
-    std::cout << this->weights[0].size() << " | " << weightUpdates[0].size() << std::endl;
-    std::cout << this->weights[0][0].size() << " | " << weightUpdates[0][0].size() << std::endl;
-
-
-
+    // Now Update the weights
+    for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
+        for (size_t rowIdx = 0; rowIdx < this->weights[layerIdx].size(); rowIdx++) {
+            for (size_t colIdx = 0; colIdx < this->weights[layerIdx][rowIdx].size(); colIdx++){
+                this->weights[layerIdx][rowIdx][colIdx] = this->weights[layerIdx][rowIdx][colIdx] - this->initialLR * weightUpdates[layerIdx][rowIdx][colIdx];
+            }
+        }
+    }
     return;
-
-
-    // Output Neuron Differentials
-    
-    // then calc neuron differentials 
-    
-
-
-    // then can get weight update with those
 }
 
 

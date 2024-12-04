@@ -31,7 +31,7 @@ int main() {
     DoubleVector2D data = transpose(importedData);
 
     // Create mlp object
-    std::vector<int> myStruct = { 5, 20, 10, 1};
+    std::vector<int> myStruct = { 5, 5, 3, 1};
     MLP mlp(myStruct);
 
     // Initialise Weights and Bias
@@ -41,6 +41,13 @@ int main() {
     // TODO: when moving this to acutal function make sure this is inside try catch
     DoubleVector2D data32 = sliceCols(data, 0, 31);
     DoubleVector2D target32 = sliceCols(targets, 0, 31);
+
+
+    /* ForwardPropResult res = mlp.forwardProp(data32); */
+    /* const size_t idx = 2; */
+    /* std::cout << "Z In Layer: " << idx << " (" << res.z[idx].size() << "x" << res.z[idx][0].size() << ")" << std::endl; */
+    /* std::cout << "A In Layer: " << idx << " (" << res.a[idx].size() << "x" << res.a[idx][0].size() << ")" << std::endl; */
+    /* return 0; */
 
     mlp.singleBackPropItter(data32, target32);
     return 0;

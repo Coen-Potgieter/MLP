@@ -37,6 +37,7 @@ DoubleVector2D separateTarget(DoubleVector2D& data, std::vector<int>& targetCols
 DoubleVector2D transpose(const DoubleVector2D& matrix);
 DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx);
 void printData(DoubleVector2D data, const size_t& numRows=0);
+double sumMatrixElems(const DoubleVector2D& inpMatrix);
 
 
 

@@ -67,7 +67,8 @@ class MLP {
 
         // Main Functions
         ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;
-        void singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target);
+        void singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D& target);
+        void miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, const size_t numEpochs=15);
         
         // Template For Loss Functions, See README or obsidian notes
         template <NumericMatrix Mat>
@@ -103,7 +104,7 @@ class MLP {
         }
 
         template <NumericMatrix Mat>
-        DoubleVector2D avgLossGradient(const Mat& groundTruth, const Mat& preds) const {
+        DoubleVector2D lossGradient(const Mat& groundTruth, const Mat& preds) const {
 
             // Ensure both matrices are of same size
             if ((groundTruth.size() != preds.size()) || (groundTruth[0].size() != preds[0].size())){
@@ -123,7 +124,7 @@ class MLP {
 
             for (size_t neuronIdx = 0; neuronIdx < numNeurons; neuronIdx++) {
                 for (size_t exampleIdx = 0; exampleIdx < numInstances; exampleIdx++) {
-                    outputGrad[neuronIdx][exampleIdx] = (preds[neuronIdx][exampleIdx] - groundTruth[neuronIdx][exampleIdx]) / numInstances;
+                    outputGrad[neuronIdx][exampleIdx] = preds[neuronIdx][exampleIdx] - groundTruth[neuronIdx][exampleIdx];
                 }
             }
             return outputGrad;

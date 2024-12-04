@@ -339,16 +339,24 @@ DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx,
         throw std::invalid_argument("Error: Invalid Index Values Given");
     }
     const size_t numRows = inpMatrix.size();
-    DoubleVector2D outp(numRows, std::vector<double>(endIdx - startIdx + 1));
+    const size_t numCols = endIdx - startIdx + 1;
+    DoubleVector2D outp(numRows, std::vector<double>(numCols));
 
     for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
-        for (size_t colIdx = 0; colIdx <= endIdx; colIdx++) {
+        for (size_t colIdx = 0; colIdx < numCols; colIdx++) {
             outp[rowIdx][colIdx] = inpMatrix[rowIdx][startIdx + colIdx];
         }
     }
-
     return outp;
-
+}
+double sumMatrixElems(const DoubleVector2D& inpMatrix) {
+    double runningSum = 0;
+    for (const std::vector<double>& row : inpMatrix) {
+        for (const double& elem : row) {
+            runningSum += elem;
+        }
+    }
+    return runningSum;
 }
 
 

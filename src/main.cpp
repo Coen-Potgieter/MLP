@@ -31,25 +31,17 @@ int main() {
     DoubleVector2D data = transpose(importedData);
 
     // Create mlp object
-    std::vector<int> myStruct = { 5, 5, 3, 1};
+    std::vector<int> myStruct = { 5, 25, 5, 1};
     MLP mlp(myStruct);
 
-    // Initialise Weights and Bias
+    // Initialise Weights, Bias and HyperParams
     mlp.initWeights(MLP::InitMethod::UNIFORM);
-    mlp.initBias(MLP::InitMethod::UNIFORM, -10, 10);
+    mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
+    mlp.setOutputLayerAct(MLP::ActFunc::RELU);
+    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
+    mlp.setLR(0.01);
 
-    // TODO: when moving this to acutal function make sure this is inside try catch
-    DoubleVector2D data32 = sliceCols(data, 0, 31);
-    DoubleVector2D target32 = sliceCols(targets, 0, 31);
-
-
-    /* ForwardPropResult res = mlp.forwardProp(data32); */
-    /* const size_t idx = 2; */
-    /* std::cout << "Z In Layer: " << idx << " (" << res.z[idx].size() << "x" << res.z[idx][0].size() << ")" << std::endl; */
-    /* std::cout << "A In Layer: " << idx << " (" << res.a[idx].size() << "x" << res.a[idx][0].size() << ")" << std::endl; */
-    /* return 0; */
-
-    mlp.singleBackPropItter(data32, target32);
+    mlp.miniBatchGD(data, targets, 100000);
     return 0;
 }
 
@@ -147,7 +139,7 @@ void testTemplateLossFuncs() {
 
     std::cout << std::endl << std::endl;
     DoubleVector2D lossGradient;
-    lossGradient = mlp.avgLossGradient(target, preds);
+    lossGradient = mlp.lossGradient(target, preds);
     
     for (const std::vector<double>& row : lossGradient) {
         for (const double& elem : row) {

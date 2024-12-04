@@ -248,15 +248,16 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 }
 
 // See Obsidian Notes
-void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D target) {
+void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D& target) {
 
     DEBUG_LOG("Performing BackProp");
-
-    // Create 3 matrcies to store nueron differentials, weight updates
     size_t numLayers = this->weights.size();
-    DoubleVector3D weightUpdates(numLayers);
+    const size_t numExamples = inpBatch[0].size();
 
+    // Create 3D matrcies to store nueron differentials, weight updates
+    DoubleVector3D weightUpdates(numLayers);
     DoubleVector3D layerDifferentials(numLayers);
+    // To Store matrices depending on layer
     DoubleVector2D tmpLayerDifferentials;
     
     // Forward Prop run
@@ -270,21 +271,20 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
     std::vector<double> row1s(inp[0].size(), 1.0);
     inp.insert(inp.begin(), row1s);
 
-
     for (int layer = numLayers - 1; layer >= 0; layer--) {
 
         DEBUG_LOG("BackProp for Layer: " << layer);
-        // Apply activation Gradient
+        // Apply activation Gradient to Net Function output Z
         applyGradientActivation(resForwardProp.z[layer], layer);
 
-        // Get Current Weights
+        // Get Current Weights (slice out first col)
         onlyWeights[layer] = sliceCols(this->weights[layer], 1, this->weights[layer][0].size() -1);
 
-        // Output Layer
         if (layer == (numLayers - 1)){
-            // Average Loss Gradient
-            tmpLayerDifferentials = this->avgLossGradient(target, resForwardProp.a[layer]);
+            // If Output Layer get Loss Gradient
+            tmpLayerDifferentials = this->lossGradient(target, resForwardProp.a[layer]);
         } else {
+            // If Hidden Layer then use nueron differential matrix one layer up
             tmpLayerDifferentials = matrixMultiply(transpose(onlyWeights[layer + 1]), layerDifferentials[layer+1]);
         }
         layerDifferentials[layer] = elementWiseMatrixMultiply(tmpLayerDifferentials, resForwardProp.z[layer]);
@@ -292,24 +292,76 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
 
         // Neuron Differentials Done, now we can do weight and bias updates
         if (layer == 0) {
+            // If first layer we need to use inputs or A^(0)
             weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(inp));
         } else {
             weightUpdates[layer] = matrixMultiply(layerDifferentials[layer], transpose(resForwardProp.a[layer-1]));
         }
-
     }
 
+    double update;
     // Now Update the weights
     for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
         for (size_t rowIdx = 0; rowIdx < this->weights[layerIdx].size(); rowIdx++) {
             for (size_t colIdx = 0; colIdx < this->weights[layerIdx][rowIdx].size(); colIdx++){
-                this->weights[layerIdx][rowIdx][colIdx] = this->weights[layerIdx][rowIdx][colIdx] - this->initialLR * weightUpdates[layerIdx][rowIdx][colIdx];
+
+                // Do Batch Avgeraging Here
+                update = weightUpdates[layerIdx][rowIdx][colIdx] / numExamples;
+                this->weights[layerIdx][rowIdx][colIdx] -=  this->initialLR * update;
             }
         }
     }
     return;
 }
 
+void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, const size_t numEpochs) {
+
+
+    const size_t numExamples = data[0].size();
+    const size_t numLayers = this->weights.size();
+
+    // Ensure Number of examples in data matches with target
+    if (target[0].size() != numExamples) {
+        throw std::invalid_argument("Number of Examples in `data` does not match `target`");
+    }
+
+    // 1. Split the Data
+    const int numWholeBatches = numExamples / this->batchSize;
+    const int lastBatchSize = numExamples % this->batchSize;
+    size_t batchStartIdx;
+    size_t batchEndIdx;
+    DoubleVector2D dataBatch;
+    DoubleVector2D targetBatch;
+    DoubleVector2D lossMatrix;
+    ForwardPropResult forwardRes;
+    double totalError;
+
+    // 2. Run backprop on each batch for x epochs
+    for (size_t epochIdx = 0; epochIdx < numEpochs; epochIdx++){
+        for (size_t batchIdx = 0; batchIdx < numWholeBatches; batchIdx++) {
+            // Get Batch
+            batchStartIdx = batchIdx * this->batchSize;
+            batchEndIdx = batchStartIdx + this->batchSize - 1;
+            dataBatch = sliceCols(data, batchStartIdx, batchEndIdx);
+            targetBatch = sliceCols(target, batchStartIdx, batchEndIdx);
+            
+            this->singleBackPropItter(dataBatch, targetBatch);
+        }
+        // Remaining examples that dont fit neatly into batches
+        if (lastBatchSize > 0) {
+            dataBatch = sliceCols(data, batchEndIdx + 1, numExamples - 1);
+            targetBatch = sliceCols(target, batchEndIdx + 1, numExamples - 1);
+            this->singleBackPropItter(dataBatch, targetBatch);
+        }
+
+        // 3. Assess Error
+        forwardRes = this->forwardProp(data);
+        lossMatrix = calcLoss(target, forwardRes.a[numLayers-1]);
+        totalError = sumMatrixElems(lossMatrix);
+
+        std::cout << "Total Error For Epoch " << epochIdx + 1 << ": " << totalError << std::endl;
+    }
+}
 
 
  

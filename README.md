@@ -223,4 +223,7 @@
 - Library used to import csv files: [ben-strasser/fast-cpp-csv-parser: fast-cpp-csv-parser](https://github.com/ben-strasser/fast-cpp-csv-parser) 
 - New DataSet: [vincentarelbundock.github.io/Rdatasets/datasets.html](https://vincentarelbundock.github.io/Rdatasets/datasets.html)
     - CPSSW04.csv
+- MNIST Dataset: [MNIST Dataset](https://www.kaggle.com/datasets/hojjatk/mnist-dataset?resource=download&select=t10k-labels.idx1-ubyte)
+    - `t10k-images.idx3-ubyte`  
+    - `t10k-labels.idx1-ubyte`
 

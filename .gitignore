@@ -2,7 +2,8 @@
 # My Ignores
 bin/*
 !bin/.gitkeep
-data/*.csv
+data/*
+!data/.gitkeep
 
 # Prerequisites
 *.d

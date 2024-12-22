@@ -10,7 +10,13 @@
 #include "alias.h"
 #include "mlp.h"
 
+struct DataMNIST {
+    Uint8Vector3D imgs;
+    std::vector<uint8_t> labels;
+};
+
 namespace fs = std::filesystem;
+
 
 // Helper Funcs for Debugging
 void printMatrix(const DoubleVector2D& mat);
@@ -38,6 +44,11 @@ DoubleVector2D transpose(const DoubleVector2D& matrix);
 DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx);
 void printData(DoubleVector2D data, const size_t& numRows=0);
 double sumMatrixElems(const DoubleVector2D& inpMatrix);
+DataMNIST importMNIST();
+void printMNISTImg(const Uint8Vector2D& inptImg, const uint8_t& brightnessThreshold=128);
+Uint8Vector2D Flatten3DTensor(const Uint8Vector3D& data);
+Uint8Vector3D buildImgFromFlat(const Uint8Vector2D& flatData);
+DoubleVector2D castVecFromUint8ToDouble(const Uint8Vector2D& data);
 
 
 

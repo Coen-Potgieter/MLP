@@ -193,14 +193,14 @@
 
 - `data`
     - Rows = Attributes 
-    - Columns = rows
+    - Columns = examples
     - Note that this was a late decision, so there is some weird initialisation stuffs with transposing
 - `separateTarget()`
     - Note the order of columns (line 165)
 - `calcLoss()`
     - Returns a matrix such that we can perform aggregations how we like
     - Inputs reuquire (Rows = output neurons, Cols = examples)
-- `elu()` activation function is using a backed in aplha value of 1
+- `elu()` activation function is using a baked in aplha value of 1
     - This was done to make function pointers simpler
 - Default `MLP` constructor
     - HiddenLayerActFunc = RELU

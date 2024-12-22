@@ -8,6 +8,7 @@
 #include "alias.h"
 #include "debug_log.h"
 
+
 struct ForwardPropResult {
     DoubleVector3D z; // Output of net function
     DoubleVector3D a; // Output of activations

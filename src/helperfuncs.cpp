@@ -1,6 +1,7 @@
 #include "helperfuncs.h"
 #include "debug_log.h"
 #include "mlp.h"
+#include <cstdint>
 #include <stdexcept>
 
 void printMatrix(const DoubleVector2D& mat) {
@@ -65,7 +66,7 @@ DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& 
     // Ensure that dimensions are correct (mat1 cols == mat2 rows)
     if (mat1[0].size() != mat2.size()){
         DEBUG_LOG("Dims of `mat1`: " << mat1.size() << "x" << mat1[0].size() <<
-                " | Dims of `mat2`: " << mat2.size() << "x" << mat2[0].size());
+                  " | Dims of `mat2`: " << mat2.size() << "x" << mat2[0].size());
         throw std::invalid_argument("Number of columns in mat1 must be eqaul to the number of rows in mat2");
     }
 
@@ -76,7 +77,7 @@ DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& 
 
     DoubleVector2D outpMat(numOutpRows, std::vector<double>(numOutpCols, 0.0));
 
-    
+
     // Populate each element in `outpMat`
     for (size_t row = 0; row < numOutpRows; row++) {
         for (size_t col = 0; col < numOutpCols; col++) {
@@ -200,7 +201,7 @@ DoubleVector2D importCSV(std::string_view pathToCSV) {
 
         row = separateRow(line);
         // Process each element
-       
+
         // Populate Degree 
         if (row[2] == "bachelor") {
             procRow[0] = 1;
@@ -257,8 +258,6 @@ void normaliseData(DoubleVector2D& data) {
     }
 
     return;
-
-
 }
 
 // Removes target from data and returns it as a matrix
@@ -360,7 +359,184 @@ double sumMatrixElems(const DoubleVector2D& inpMatrix) {
 }
 
 
+DataMNIST importMNIST() {
+    // Define path
+    std::string_view pathToImgs = "data/t10k-images.idx3-ubyte";
+
+    std::ifstream fin;
+    fin.open(pathToImgs, std::ios::binary);
+    if (!fin) {
+        std::cerr << "Failed to Open File At: " << pathToImgs << std::endl;
+    }
+
+    // Read headers
+    int32_t magicNumber = 0;
+    int32_t numImgs = 0;
+    int32_t numRows = 0;
+    int32_t numCols = 0;
+
+    fin.read(reinterpret_cast<char*>(&magicNumber), 4);
+    if (fin.gcount() < 4) {
+        std::cerr << "Error Reading Magic Number" << std::endl;
+    }
+    fin.read(reinterpret_cast<char*>(&numImgs), 4);
+    if (fin.gcount() < 4) {
+        std::cerr << "Error Reading Number of Images" << std::endl;
+    }
+    fin.read(reinterpret_cast<char*>(&numRows), 4);
+    if (fin.gcount() < 4) {
+        std::cerr << "Error Reading Number of Rows" << std::endl;
+    }
+    fin.read(reinterpret_cast<char*>(&numCols), 4);
+    if (fin.gcount() < 4) {
+        std::cerr << "Error Reading Number of Cols" << std::endl;
+    }
+
+    // Got Fucky results, so I'm reversing endianess
+    magicNumber = __builtin_bswap32(magicNumber);
+    numImgs = __builtin_bswap32(numImgs);
+    numRows = __builtin_bswap32(numRows);
+    numCols = __builtin_bswap32(numCols);
+
+    std::cout << "Magic Number: " << magicNumber << std::endl;
+    std::cout << "Number of Images: " << numImgs << std::endl;
+    std::cout << "Number of Rows: " << numRows << std::endl;
+    std::cout << "Number of Cols: " << numCols << std::endl;
+
+    std::vector<std::vector<std::vector<uint8_t>>> imgs(
+        numImgs, 
+        std::vector<std::vector<uint8_t>>(
+            numRows, std::vector<uint8_t>(
+                numCols))
+    );
+
+    // Read image data
+    for (int i = 0; i < numImgs; ++i) {
+        for (int r = 0; r < numRows; ++r) {
+            fin.read(reinterpret_cast<char*>(imgs[i][r].data()), numCols);
+            if (fin.gcount() < 1) {
+                std::cerr << "Error Reading Image: " << i << " and Row: " << r << std::endl;
+            }
+        }
+    }
+    fin.close();
 
 
- 
+    // Define path
+    std::string_view pathToLabels = "data/t10k-labels.idx1-ubyte";
+
+    std::ifstream finLabels;
+    finLabels.open(pathToLabels, std::ios::binary);
+    if (!finLabels) {
+        std::cerr << "Failed to Open File At: " << pathToLabels << std::endl;
+    }
+
+    // Read headers
+    magicNumber = 0;
+    int32_t numLabels = 0;
+
+    finLabels.read(reinterpret_cast<char*>(&magicNumber), 4);
+    if (finLabels.gcount() < 4) {
+        std::cerr << "Error Reading Magic Number" << std::endl;
+    }
+    finLabels.read(reinterpret_cast<char*>(&numLabels), 4);
+    if (finLabels.gcount() < 4) {
+        std::cerr << "Error Reading Number of Labels" << std::endl;
+    }
+
+    // Got Fucky results, so I'm reversing endianess
+    magicNumber = __builtin_bswap32(magicNumber);
+    numLabels = __builtin_bswap32(numLabels);
+
+    std::cout << "Magic Number: " << magicNumber << std::endl;
+    std::cout << "Number of Labels: " << numLabels << std::endl;
+
+    std::vector<uint8_t> labels(numLabels);
+    // Read label data
+    finLabels.read(reinterpret_cast<char*>(labels.data()), numLabels);
+
+    finLabels.close();
+
+    DataMNIST results;
+    results.imgs = imgs;
+    results.labels = labels;
+    return results;
+}
+
+void printMNISTImg(const Uint8Vector2D& inptImg, const uint8_t& brightnessThreshold) {
+
+    size_t numRows = inptImg.size();
+    size_t numCols = inptImg[0].size();
+
+    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
+        for (size_t colIdx = 0; colIdx < numCols; colIdx++){
+            uint8_t pixelVal = inptImg[rowIdx][colIdx];
+            std::string_view pixelVisual = (pixelVal >= brightnessThreshold) ? "#" : "-";
+            std::cout << pixelVisual;
+        }
+        std::cout << std::endl;
+    }
+}
+
+Uint8Vector2D Flatten3DTensor(const Uint8Vector3D& data) {
+
+    const int numImgs = data.size();
+    const int numRows = data[0].size();
+    const int numCols = data[0][0].size();
+
+    Uint8Vector2D outp(numRows*numCols, std::vector<uint8_t>(numImgs));
+
+    int targetFlatRowIdx;
+    for (size_t imgIdx = 0; imgIdx < numImgs; imgIdx++){
+        for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++){
+            for (size_t colIdx = 0; colIdx < numCols; colIdx++){
+                targetFlatRowIdx = numCols*rowIdx + colIdx;
+                outp[targetFlatRowIdx][imgIdx] = data[imgIdx][rowIdx][colIdx];
+            }
+        }
+    }
+
+    return outp;
+}
+
+Uint8Vector3D buildImgFromFlat(const Uint8Vector2D& flatData) {
+
+    const int numImgs = flatData[0].size();
+    const int numRows = sqrt(flatData.size());
+    const int numCols = numRows;
+
+    Uint8Vector3D outp(
+        numImgs, 
+        std::vector<std::vector<uint8_t>>(
+            numRows, std::vector<uint8_t>(
+                numCols))
+    );
+
+    int targetFlatRowIdx;
+    for (size_t imgIdx = 0; imgIdx < numImgs; imgIdx++){
+        for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++){
+            for (size_t colIdx = 0; colIdx < numCols; colIdx++){
+                targetFlatRowIdx = numCols*rowIdx + colIdx;
+                outp[imgIdx][rowIdx][colIdx] = flatData[targetFlatRowIdx][imgIdx];
+            }
+        }
+    }
+
+    return outp;
+}
+
+DoubleVector2D castVecFromUint8ToDouble(const Uint8Vector2D& data) {
+    const int numRows = data.size();
+    const int numCols = data[0].size();
+
+    DoubleVector2D outp(numRows, std::vector<double>(numCols));
+
+    for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++){
+        for (size_t colIdx = 0; colIdx < numCols; colIdx++){
+            outp[rowIdx][colIdx] = static_cast<double>(data[rowIdx][colIdx]);
+        }
+    }
+    return outp;
+}
+
 

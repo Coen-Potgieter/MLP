@@ -1,47 +1,18 @@
 #include "mlp.h"
 #include "helperfuncs.h"
+#include <cstdint>
 #include <stdexcept>
+#include <string_view>
 
 void testGettersSetters();
 void testTemplateLossFuncs();
+int trainSalarayData();
+int trainMNIST();
+
 int main() {
 
-    // Import data
-    DoubleVector2D importedData;
-    try {
-        importedData = importCSV("data/CPSSW04.csv");
-    } catch (const std::invalid_argument& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
-    } catch (const std::ios::ios_base::failure& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
-    }
-    normaliseData(importedData);
-
-    // Separate data from targets
-    std::vector<int> targetCols = { 5 };
-    DoubleVector2D targets;
-    try{
-        targets = transpose(separateTarget(importedData, targetCols));
-    } catch (const std::invalid_argument& e) {
-        std::cerr << e.what() << std::endl;
-        return 1;
-    }
-    DoubleVector2D data = transpose(importedData);
-
-    // Create mlp object
-    std::vector<int> myStruct = { 5, 25, 5, 1};
-    MLP mlp(myStruct);
-
-    // Initialise Weights, Bias and HyperParams
-    mlp.initWeights(MLP::InitMethod::UNIFORM);
-    mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
-    mlp.setOutputLayerAct(MLP::ActFunc::RELU);
-    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
-    mlp.setLR(0.01);
-
-    mlp.miniBatchGD(data, targets, 100000);
+    return trainMNIST();
+    return trainSalarayData();
     return 0;
 }
 
@@ -149,9 +120,72 @@ void testTemplateLossFuncs() {
 }
 
 
+int trainSalarayData() {
+
+    // Import data
+    DoubleVector2D importedData;
+    try {
+        importedData = importCSV("data/CPSSW04.csv");
+    } catch (const std::invalid_argument& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    } catch (const std::ios::ios_base::failure& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+    normaliseData(importedData);
+
+    // Separate data from targets
+    std::vector<int> targetCols = { 5 };
+    DoubleVector2D targets;
+    try{
+        targets = transpose(separateTarget(importedData, targetCols));
+    } catch (const std::invalid_argument& e) {
+        std::cerr << e.what() << std::endl;
+        return 1;
+    }
+    DoubleVector2D data = transpose(importedData);
+
+    // Create mlp object
+    std::vector<int> myStruct = { 5, 25, 5, 1};
+    MLP mlp(myStruct);
+
+    // Initialise Weights, Bias and HyperParams
+    mlp.initWeights(MLP::InitMethod::UNIFORM);
+    mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
+    mlp.setOutputLayerAct(MLP::ActFunc::RELU);
+    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
+    mlp.setLR(0.01);
+
+    mlp.miniBatchGD(data, targets, 100000);
+    return 0;
+}
+
+int trainMNIST() {
 
 
+    DataMNIST data = importMNIST(); // Import the Data (img, row, col)
+    Uint8Vector3D imgData = data.imgs;
+    std::vector<uint8_t> labelData = data.labels;
+    size_t imgIdx = 1;
+    printMNISTImg(imgData[imgIdx], 128);
+    std::cout << static_cast<int>(labelData[imgIdx]) << std::endl;
 
+    return 0;
+
+    Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img)
+    DoubleVector2D flatDoubleData = castVecFromUint8ToDouble(flatData); // Cast to Double
+    normaliseData(flatDoubleData); // Normalise (z-score)
+    printMatrix(flatDoubleData);
+
+    // Create mlp object
+    std::vector<int> myStruct = { 784, 100, 50, 10};
+    MLP mlp(myStruct);
+
+
+    return 0;
+    /* imgData = buildImgFromFlat(flatData); */
+}
 
 
 

@@ -363,6 +363,7 @@ DataMNIST importMNIST() {
     // Define path
     std::string_view pathToImgs = "data/t10k-images.idx3-ubyte";
 
+    DEBUG_LOG("\nImporting MNIST dataset:\nImage Data From: " << pathToImgs);
     std::ifstream fin;
     fin.open(pathToImgs, std::ios::binary);
     if (!fin) {
@@ -398,10 +399,11 @@ DataMNIST importMNIST() {
     numRows = __builtin_bswap32(numRows);
     numCols = __builtin_bswap32(numCols);
 
-    std::cout << "Magic Number: " << magicNumber << std::endl;
-    std::cout << "Number of Images: " << numImgs << std::endl;
-    std::cout << "Number of Rows: " << numRows << std::endl;
-    std::cout << "Number of Cols: " << numCols << std::endl;
+    DEBUG_LOG("Magic Number: " << magicNumber << std::endl << 
+              "Number of Images: " << numImgs << std::endl << 
+              "Number of Rows: " << numRows << std::endl << 
+              "Number of Cols: " << numCols << std::endl 
+              );
 
     std::vector<std::vector<std::vector<uint8_t>>> imgs(
         numImgs, 
@@ -425,6 +427,8 @@ DataMNIST importMNIST() {
     // Define path
     std::string_view pathToLabels = "data/t10k-labels.idx1-ubyte";
 
+
+    DEBUG_LOG("Import Label Data From: " << pathToLabels);
     std::ifstream finLabels;
     finLabels.open(pathToLabels, std::ios::binary);
     if (!finLabels) {
@@ -448,13 +452,15 @@ DataMNIST importMNIST() {
     magicNumber = __builtin_bswap32(magicNumber);
     numLabels = __builtin_bswap32(numLabels);
 
-    std::cout << "Magic Number: " << magicNumber << std::endl;
-    std::cout << "Number of Labels: " << numLabels << std::endl;
+    DEBUG_LOG("Magic Number: " << magicNumber << std::endl <<
+              "Number of Labels: " << numLabels << std::endl);
 
     std::vector<uint8_t> labels(numLabels);
     // Read label data
     finLabels.read(reinterpret_cast<char*>(labels.data()), numLabels);
-
+    if (finLabels.gcount() < numLabels) {
+        std::cerr << "Error Reading Labels" << std::endl;
+    }
     finLabels.close();
 
     DataMNIST results;
@@ -525,7 +531,7 @@ Uint8Vector3D buildImgFromFlat(const Uint8Vector2D& flatData) {
     return outp;
 }
 
-DoubleVector2D castVecFromUint8ToDouble(const Uint8Vector2D& data) {
+DoubleVector2D castImgsFromUint8ToDouble(const Uint8Vector2D& data) {
     const int numRows = data.size();
     const int numCols = data[0].size();
 
@@ -538,5 +544,36 @@ DoubleVector2D castVecFromUint8ToDouble(const Uint8Vector2D& data) {
     }
     return outp;
 }
+
+
+std::vector<double> castTargetsFromUint8ToDouble(const std::vector<uint8_t>& labels) {
+    const int numLabels = labels.size();
+    std::vector<double> outp(numLabels);
+    for (int l = 0; l < numLabels; l++) {
+        outp[l] = static_cast<double>(labels[l]);
+    }
+    return outp;
+}
+
+
+DoubleVector2D oneHotEncodeTargets(const std::vector<double>& labels) {
+
+    const int numLabels = labels.size();
+
+    DoubleVector2D outp(10, std::vector<double>(numLabels, 0.0));
+
+    uint8_t oneHotLabelIdx;
+    for (size_t labelIdx = 0; labelIdx < numLabels; labelIdx++) {
+        oneHotLabelIdx = labels[labelIdx];
+        outp[oneHotLabelIdx][labelIdx] = 1.0;
+    }
+    return outp;
+}
+
+
+
+
+
+
 
 

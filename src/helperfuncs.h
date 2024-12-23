@@ -1,4 +1,4 @@
-
+#include <cstdint>
 #include <vector>
 #include <iostream>
 #include <iomanip>
@@ -17,10 +17,31 @@ struct DataMNIST {
 
 namespace fs = std::filesystem;
 
-
-// Helper Funcs for Debugging
+// Printing Functions
+void printMlpEnum(MLP::InitMethod inpEnum);
+void printMlpEnum(MLP::ActFunc inpEnum);
+void printMlpEnum(MLP::LossFunc inpEnum);
+void printData(DoubleVector2D data, const size_t& numRows=0);
+void printMNISTImg(const Uint8Vector2D& inptImg, const uint8_t& brightnessThreshold=128);
 void printMatrix(const DoubleVector2D& mat);
 void printDims(const DoubleVector2D& mat);
+
+// Matrix Operations
+DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
+DoubleVector2D elementWiseMatrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
+DoubleVector2D transpose(const DoubleVector2D& matrix);
+double sumMatrixElems(const DoubleVector2D& inpMatrix);
+
+// Pre-processing Operations
+void normaliseData(DoubleVector2D& data);
+std::vector<std::string> separateRow(const std::string& content);
+DoubleVector2D separateTarget(DoubleVector2D& data, std::vector<int>& targetCols);
+DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx);
+Uint8Vector2D Flatten3DTensor(const Uint8Vector3D& data);
+Uint8Vector3D buildImgFromFlat(const Uint8Vector2D& flatData);
+DoubleVector2D castImgsFromUint8ToDouble(const Uint8Vector2D& data);
+std::vector<double> castTargetsFromUint8ToDouble(const std::vector<uint8_t>& labels);
+DoubleVector2D oneHotEncodeTargets(const std::vector<double>& labels);
 
 // Activations And Gradients
 double relu(const double z);
@@ -31,24 +52,10 @@ double derivativeRelu(const double z);
 double derivativeTanh(const double z);
 double derivativeSigmoid(const double z);
 double derivativeElu(const double z);
-DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
-DoubleVector2D elementWiseMatrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
-void printMlpEnum(MLP::InitMethod inpEnum);
-void printMlpEnum(MLP::ActFunc inpEnum);
-void printMlpEnum(MLP::LossFunc inpEnum);
-std::vector<std::string> separateRow(const std::string& content);
+
+// Importing Functions
 DoubleVector2D importCSV(std::string_view pathToCSV);
-void normaliseData(DoubleVector2D& data);
-DoubleVector2D separateTarget(DoubleVector2D& data, std::vector<int>& targetCols);
-DoubleVector2D transpose(const DoubleVector2D& matrix);
-DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx);
-void printData(DoubleVector2D data, const size_t& numRows=0);
-double sumMatrixElems(const DoubleVector2D& inpMatrix);
 DataMNIST importMNIST();
-void printMNISTImg(const Uint8Vector2D& inptImg, const uint8_t& brightnessThreshold=128);
-Uint8Vector2D Flatten3DTensor(const Uint8Vector3D& data);
-Uint8Vector3D buildImgFromFlat(const Uint8Vector2D& flatData);
-DoubleVector2D castVecFromUint8ToDouble(const Uint8Vector2D& data);
 
 
 

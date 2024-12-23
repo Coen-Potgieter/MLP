@@ -167,24 +167,37 @@ int trainMNIST() {
     DataMNIST data = importMNIST(); // Import the Data (img, row, col)
     Uint8Vector3D imgData = data.imgs;
     std::vector<uint8_t> labelData = data.labels;
-    size_t imgIdx = 1;
-    printMNISTImg(imgData[imgIdx], 128);
-    std::cout << static_cast<int>(labelData[imgIdx]) << std::endl;
-
-    return 0;
+    std::vector<double> doubleLabels = castTargetsFromUint8ToDouble(labelData);
+    DoubleVector2D oneHotLabels = oneHotEncodeTargets(doubleLabels);
 
     Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img)
-    DoubleVector2D flatDoubleData = castVecFromUint8ToDouble(flatData); // Cast to Double
+    DoubleVector2D flatDoubleData = castImgsFromUint8ToDouble(flatData); // Cast to Double
     normaliseData(flatDoubleData); // Normalise (z-score)
-    printMatrix(flatDoubleData);
+    
+
+    // Split Data
+    DoubleVector2D trainData= sliceCols(flatDoubleData, 0, 1000);
+    DoubleVector2D trainLabels = sliceCols(oneHotLabels, 0, 1000);
 
     // Create mlp object
-    std::vector<int> myStruct = { 784, 100, 50, 10};
+    std::vector<int> myStruct = { 784, 50, 10};
     MLP mlp(myStruct);
+    
+    // Initialise Weights, Bias and HyperParams
+    mlp.initWeights(MLP::InitMethod::UNIFORM);
+    mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
+    mlp.setOutputLayerAct(MLP::ActFunc::RELU);
+    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
+    mlp.setLR(0.1);
+
+    mlp.miniBatchGD(trainData, trainLabels, 1000);
 
 
     return 0;
+    /* size_t imgIdx = 1; */
     /* imgData = buildImgFromFlat(flatData); */
+    /* printMNISTImg(imgData[imgIdx], 128); */
+    /* std::cout << static_cast<int>(labelData[imgIdx]) << std::endl; */
 }
 
 

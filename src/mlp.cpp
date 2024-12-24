@@ -1,9 +1,5 @@
 #include "mlp.h"
 #include "helperfuncs.h"
-#include <cmath>
-#include <cstdint>
-#include <filesystem>
-#include <stdexcept>
 
 
 MLP::MLP(const std::vector<int>& inpStructure, const ActFunc inpHiddenLayerAct, const ActFunc inpOutputLayerAct, const LossFunc inpLossFunc, const float inpLR, const int inpDecayRate, const int inpBatchSize) {
@@ -424,10 +420,6 @@ void MLP::saveModel(std::string_view filePath) const {
     for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
         numRows = static_cast<int32_t>(weights[layerIdx].size());
         numCols = static_cast<int32_t>(weights[layerIdx][0].size());
-
-        std::cout << "Num Rows Writing: " << numRows << std::endl;
-        std::cout << "Num Cols Writing: " << numCols << std::endl;
-
         fout.write(reinterpret_cast<const char*>(&numRows), sizeof(int32_t));
         fout.write(reinterpret_cast<const char*>(&numCols), sizeof(int32_t));
     }
@@ -447,10 +439,16 @@ void MLP::loadModel(std::string_view filePath) {
 
     // Check if Path esists And if it is .bin file
     fs::path fp = filePath;
+
+    std::cout << "Loading Model..." << std::endl;
     if (!fs::exists(fp)) {
         std::cerr << "Given File Path: " << filePath << " Does not exist" << std::endl;
         return;
-    } 
+    } else if (fp.extension() != ".bin") {
+        std::cerr << "Given File Path: " << filePath << " has a '"<< fp.extension()
+            << "' extension, It must have a \".bin\" extension" << std::endl;
+        return;
+    }
 
 
     // Prepare variables to read into
@@ -459,9 +457,7 @@ void MLP::loadModel(std::string_view filePath) {
     uint8_t lossFunc; 
     double initialLR;
     uint8_t batchSize; 
-    uint8_t numLayers; 
-    std::vector<int32_t> numRows(numLayers);
-    std::vector<int32_t> numCols(numLayers);
+    uint8_t numLayers = 0; 
 
     std::ifstream fin;
     fin.open(filePath, std::ios::binary);
@@ -473,43 +469,53 @@ void MLP::loadModel(std::string_view filePath) {
     fin.read(reinterpret_cast<char*>(&hiddenActFunc), 1);
     if (fin.gcount() < 1) {
         std::cerr << "Error reading Hidden Layer Activation Function" << std::endl;
+        fin.close();
         return;
     }
     fin.read(reinterpret_cast<char*>(&outputActFunc), 1);
     if (fin.gcount() < 1) {
         std::cerr << "Error reading Output Layer Activation Function" << std::endl;
+        fin.close();
         return;
     }
     fin.read(reinterpret_cast<char*>(&lossFunc), 1);
     if (fin.gcount() < 1) {
         std::cerr << "Error reading Loss Function" << std::endl;
+        fin.close();
         return;
     }
     fin.read(reinterpret_cast<char*>(&initialLR), sizeof(double));
     if (fin.gcount() < 1) {
         std::cerr << "Error reading Initial Learning Rate" << std::endl;
+        fin.close();
         return;
     }
     fin.read(reinterpret_cast<char*>(&batchSize), 1);
     if (fin.gcount() < 1) {
         std::cerr << "Error reading Batch Size" << std::endl;
+        fin.close();
         return;
     }
     fin.read(reinterpret_cast<char*>(&numLayers), 1);
     if (fin.gcount() < 1) {
         std::cerr << "Error reading Number of Layers" << std::endl;
+        fin.close();
         return;
     }
+    std::vector<int32_t> numRows(numLayers);
+    std::vector<int32_t> numCols(numLayers);
 
     for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
         fin.read(reinterpret_cast<char*>(&numRows[layerIdx]), sizeof(int32_t));
         if (fin.gcount() < sizeof(int32_t)) {
             std::cerr << "Error reading Number of Rows at Layer: " << layerIdx << std::endl;
+            fin.close();
             return;
         }
         fin.read(reinterpret_cast<char*>(&numCols[layerIdx]), sizeof(int32_t));
         if (fin.gcount() < sizeof(int32_t)) {
             std::cerr << "Error reading Number of Cols at Layer: " << layerIdx << std::endl;
+            fin.close();
             return;
         }
     }

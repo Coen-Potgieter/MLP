@@ -3,11 +3,14 @@
 
 #include <iostream>
 #include <stdexcept>
-#include <string_view>
+#include <string>
 #include <utility>
 #include <concepts>
+#include <cmath>
+#include <cstdint>
 #include "alias.h"
 #include "debug_log.h"
+
 
 
 struct ForwardPropResult {

@@ -1,6 +1,8 @@
 #include "mlp.h"
 #include "helperfuncs.h"
 #include <cmath>
+#include <cstdint>
+#include <filesystem>
 #include <stdexcept>
 
 
@@ -222,8 +224,8 @@ ForwardPropResult MLP::forwardProp(const DoubleVector2D& inpQuery) const {
 
         // For Debugging
         DEBUG_LOG("`weights` Matrix * `inp` Matrix: " 
-                << this->weights[layer].size() << "x" << this->weights[layer][0].size()
-                << " * " << inp.size() << "x" << inp[0].size());
+                  << this->weights[layer].size() << "x" << this->weights[layer][0].size()
+                  << " * " << inp.size() << "x" << inp[0].size());
 
         // wieght matrix multipled with our inp and store result
         inp = matrixMultiply(this->weights[layer], inp);
@@ -259,7 +261,7 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
     DoubleVector3D layerDifferentials(numLayers);
     // To Store matrices depending on layer
     DoubleVector2D tmpLayerDifferentials;
-    
+
     // Forward Prop run
     ForwardPropResult resForwardProp = this->forwardProp(inpBatch);
 
@@ -344,7 +346,7 @@ void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, 
             batchEndIdx = batchStartIdx + this->batchSize - 1;
             dataBatch = sliceCols(data, batchStartIdx, batchEndIdx);
             targetBatch = sliceCols(target, batchStartIdx, batchEndIdx);
-            
+
             this->singleBackPropItter(dataBatch, targetBatch);
         }
         // Remaining examples that dont fit neatly into batches
@@ -363,6 +365,170 @@ void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, 
     }
 }
 
+void MLP::saveModel(std::string_view filePath) const {
 
- 
+    // Check if File Exists
+    fs::path fp = filePath;
+
+
+    // Playing with User input here to either overwite existing file or not
+    std::string choice = "y";
+    if (fs::exists(fp)) {
+        bool validInput = false;
+        std::cout << "This File Already Exists, Would you like to overwrite?\n(y/n): ";
+        while (!validInput){
+            std::cin >> choice;
+            if (choice == "y" || choice == "Y" || choice == "n" || choice == "N") {
+                validInput = true;
+            } else {
+                std::cout << "Incorrect Input\n Type Either (y/n): ";
+            }
+        }
+        if (choice == "n" || choice == "N") {
+            std::cout << "Not Saving Model" << std::endl;
+            return;
+        } 
+    } else {
+        // Create Directory If it doesnt exist
+        fs::path parentPath = fp.parent_path();
+        fs::create_directories(parentPath);
+        DEBUG_LOG("Created Directory: " << parentPath);
+    }
+
+
+    // Prepare data to store
+    uint8_t hiddenActFunc = static_cast<uint8_t>(this->getHiddenLayerAct());
+    uint8_t outputActFunc = static_cast<uint8_t>(this->getOutputLayerAct());
+    uint8_t lossFunc = static_cast<uint8_t>(this->getLossFunc());
+    double initialLR = this->getLR();
+    uint8_t batchSize = static_cast<uint8_t>(this->getBatchSize());
+    // Prepare Weight&Bias header data
+    DoubleVector3D weights = this->getWeights();
+    uint8_t numLayers = static_cast<uint8_t>(weights.size());
+    int32_t numRows;
+    int32_t numCols;
+
+
+    std::ofstream fout;
+    fout.open(filePath, std::ios::binary);
+    if (!fout) {
+        std::cerr << "Error Writing to File: " << filePath << std::endl;
+    }
+
+    fout.write(reinterpret_cast<const char*>(&hiddenActFunc), 1);
+    fout.write(reinterpret_cast<const char*>(&outputActFunc), 1);
+    fout.write(reinterpret_cast<const char*>(&lossFunc), 1);
+    fout.write(reinterpret_cast<const char*>(&initialLR), sizeof(double));
+    fout.write(reinterpret_cast<const char*>(&batchSize), 1);
+    fout.write(reinterpret_cast<const char*>(&numLayers), 1);
+    for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
+        numRows = static_cast<int32_t>(weights[layerIdx].size());
+        numCols = static_cast<int32_t>(weights[layerIdx][0].size());
+
+        std::cout << "Num Rows Writing: " << numRows << std::endl;
+        std::cout << "Num Cols Writing: " << numCols << std::endl;
+
+        fout.write(reinterpret_cast<const char*>(&numRows), sizeof(int32_t));
+        fout.write(reinterpret_cast<const char*>(&numCols), sizeof(int32_t));
+    }
+
+    if (!fout.good()) {
+        std::cerr << "Error Writing to the File" << std::endl;
+        return;
+    } else {
+        std::cout << "Successfully Wrote to: " << filePath << std::endl;
+    }
+
+    fout.close();
+    return;
+}
+
+void MLP::loadModel(std::string_view filePath) {
+
+    // Check if Path esists And if it is .bin file
+    fs::path fp = filePath;
+    if (!fs::exists(fp)) {
+        std::cerr << "Given File Path: " << filePath << " Does not exist" << std::endl;
+        return;
+    } 
+
+
+    // Prepare variables to read into
+    uint8_t hiddenActFunc;
+    uint8_t outputActFunc;
+    uint8_t lossFunc; 
+    double initialLR;
+    uint8_t batchSize; 
+    uint8_t numLayers; 
+    std::vector<int32_t> numRows(numLayers);
+    std::vector<int32_t> numCols(numLayers);
+
+    std::ifstream fin;
+    fin.open(filePath, std::ios::binary);
+    if (!fin) {
+        std::cerr << "Error Writing to File: " << filePath << std::endl;
+        return;
+    }
+
+    fin.read(reinterpret_cast<char*>(&hiddenActFunc), 1);
+    if (fin.gcount() < 1) {
+        std::cerr << "Error reading Hidden Layer Activation Function" << std::endl;
+        return;
+    }
+    fin.read(reinterpret_cast<char*>(&outputActFunc), 1);
+    if (fin.gcount() < 1) {
+        std::cerr << "Error reading Output Layer Activation Function" << std::endl;
+        return;
+    }
+    fin.read(reinterpret_cast<char*>(&lossFunc), 1);
+    if (fin.gcount() < 1) {
+        std::cerr << "Error reading Loss Function" << std::endl;
+        return;
+    }
+    fin.read(reinterpret_cast<char*>(&initialLR), sizeof(double));
+    if (fin.gcount() < 1) {
+        std::cerr << "Error reading Initial Learning Rate" << std::endl;
+        return;
+    }
+    fin.read(reinterpret_cast<char*>(&batchSize), 1);
+    if (fin.gcount() < 1) {
+        std::cerr << "Error reading Batch Size" << std::endl;
+        return;
+    }
+    fin.read(reinterpret_cast<char*>(&numLayers), 1);
+    if (fin.gcount() < 1) {
+        std::cerr << "Error reading Number of Layers" << std::endl;
+        return;
+    }
+
+    for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
+        fin.read(reinterpret_cast<char*>(&numRows[layerIdx]), sizeof(int32_t));
+        if (fin.gcount() < sizeof(int32_t)) {
+            std::cerr << "Error reading Number of Rows at Layer: " << layerIdx << std::endl;
+            return;
+        }
+        fin.read(reinterpret_cast<char*>(&numCols[layerIdx]), sizeof(int32_t));
+        if (fin.gcount() < sizeof(int32_t)) {
+            std::cerr << "Error reading Number of Cols at Layer: " << layerIdx << std::endl;
+            return;
+        }
+    }
+
+    std::cout << "Hidden Act Function: " << static_cast<int>(hiddenActFunc) << std::endl;
+    std::cout << "Output Act Function: " << static_cast<int>(outputActFunc) << std::endl;
+    std::cout << "Loss Function: " << static_cast<int>(lossFunc) << std::endl;
+    std::cout << "Initial Learning Rate: " << initialLR << std::endl;
+    std::cout << "Batch Size: " << static_cast<int>(batchSize) << std::endl;
+    std::cout << "MLP Weights Structure: " << std::endl;
+    std::cout << "\t Num Layers: " << static_cast<int>(numLayers) << std::endl;
+    for (size_t layerIdx = 0; layerIdx < numLayers; layerIdx++) {
+        std::cout << "\t Matrix " << layerIdx << " Dims: (" 
+            << numRows[layerIdx] << ", " << numCols[layerIdx] << ")" << std::endl;
+    }
+
+
+    fin.close();
+}
+
+
 

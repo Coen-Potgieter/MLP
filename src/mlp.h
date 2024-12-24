@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <string_view>
 #include <utility>
 #include <concepts>
 #include "alias.h"
@@ -50,7 +51,6 @@ class MLP {
         int getDecayRate() const;
         int getBatchSize() const;
         // Setters
-        /* void setWeights(const */ // TODO
         void setHiddenLayerAct(const ActFunc newAct);
         void setOutputLayerAct(const ActFunc newAct);
         void setLossFunc(const LossFunc newLossFunc);
@@ -61,6 +61,10 @@ class MLP {
         // Initialisation Functions
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
+        
+        // Saving/ Loading of Weights
+        void saveModel(std::string_view filePath) const;
+        void loadModel(std::string_view filePath);
 
         // Helper Functions
         void applyActivation(DoubleVector2D& Z, const size_t layer) const;

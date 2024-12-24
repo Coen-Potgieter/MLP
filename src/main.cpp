@@ -10,7 +10,6 @@ int trainSalarayData();
 int trainMNIST();
 
 int main() {
-
     return trainMNIST();
     return trainSalarayData();
     return 0;
@@ -164,33 +163,56 @@ int trainSalarayData() {
 int trainMNIST() {
 
 
-    DataMNIST data = importMNIST(); // Import the Data (img, row, col)
-    Uint8Vector3D imgData = data.imgs;
-    std::vector<uint8_t> labelData = data.labels;
-    std::vector<double> doubleLabels = castTargetsFromUint8ToDouble(labelData);
-    DoubleVector2D oneHotLabels = oneHotEncodeTargets(doubleLabels);
+    /* DataMNIST data = importMNIST(); // Import the Data (img, row, col) */
+    /* Uint8Vector3D imgData = data.imgs; */
+    /* std::vector<uint8_t> labelData = data.labels; */
+    /* std::vector<double> doubleLabels = castTargetsFromUint8ToDouble(labelData); */
+    /* DoubleVector2D oneHotLabels = oneHotEncodeTargets(doubleLabels); */
 
-    Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img)
-    DoubleVector2D flatDoubleData = castImgsFromUint8ToDouble(flatData); // Cast to Double
-    normaliseData(flatDoubleData); // Normalise (z-score)
+    /* Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img) */
+    /* DoubleVector2D flatDoubleData = castImgsFromUint8ToDouble(flatData); // Cast to Double */
+    /* normaliseData(flatDoubleData); // Normalise (z-score) */
     
 
-    // Split Data
-    DoubleVector2D trainData= sliceCols(flatDoubleData, 0, 1000);
-    DoubleVector2D trainLabels = sliceCols(oneHotLabels, 0, 1000);
+    /* // Split Data */
+    /* DoubleVector2D trainData= sliceCols(flatDoubleData, 0, 1000); */
+    /* DoubleVector2D trainLabels = sliceCols(oneHotLabels, 0, 1000); */
 
     // Create mlp object
-    std::vector<int> myStruct = { 784, 50, 10};
+    std::vector<int> myStruct = { 10, 5, 7, 2, 10};
     MLP mlp(myStruct);
+
     
     // Initialise Weights, Bias and HyperParams
     mlp.initWeights(MLP::InitMethod::UNIFORM);
     mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
-    mlp.setOutputLayerAct(MLP::ActFunc::RELU);
-    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
-    mlp.setLR(0.1);
 
-    mlp.miniBatchGD(trainData, trainLabels, 1000);
+    std::string_view modelPath = "models/test.bin";
+    mlp.saveModel(modelPath);
+    mlp.loadModel(modelPath);
+    return 0;
+
+    // How to set Enum using integers
+    mlp.setHiddenLayerAct(static_cast<MLP::ActFunc>(0));
+
+/*     DoubleVector3D weights = mlp.getWeights(); */
+/*     std::cout << weights.size() << std::endl; */
+/*     /1* printDims(const DoubleVector2D &mat) *1/ */
+/*     // Test Saving of weights */
+/*     return 0; */
+
+
+
+
+/*     mlp.setOutputLayerAct(MLP::ActFunc::RELU); */
+/*     mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID); */
+/*     mlp.setLR(0.1); */
+
+/*     mlp.miniBatchGD(trainData, trainLabels, 1000); */
+
+
+  
+
 
 
     return 0;

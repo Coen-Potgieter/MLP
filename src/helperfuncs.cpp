@@ -176,6 +176,7 @@ std::vector<std::string> separateRow(const std::string& content) {
 DoubleVector2D importCSV(std::string_view pathToCSV) {
 
     DoubleVector2D outp;
+
     // Check if input is a valid path to a csv
     fs::path fp = pathToCSV;
     if (fp.extension() != ".csv" || !fs::exists(fp)) {

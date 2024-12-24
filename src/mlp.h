@@ -33,8 +33,8 @@ class MLP {
         enum class ActFunc {
             SIGMOID,
             TANH,
-            RELU, // TODO: Implement this
-            ELU  // TODO: Implement this
+            RELU, 
+            ELU,
         };
         enum class LossFunc {
             MSE,
@@ -54,6 +54,7 @@ class MLP {
         int getDecayRate() const;
         int getBatchSize() const;
         // Setters
+        void setWeights(const DoubleVector3D& inpWeights);
         void setHiddenLayerAct(const ActFunc newAct);
         void setOutputLayerAct(const ActFunc newAct);
         void setLossFunc(const LossFunc newLossFunc);
@@ -61,17 +62,18 @@ class MLP {
         void setDecayRate(const int newDecayRate);
         void setBatchSize(const int newBatchSize);
 
-        // Initialisation Functions
+        // Initialisation Methods
         void initWeights(InitMethod method, const int minVal=-1, const int maxVal=1);
         void initBias(InitMethod method, const int minVal=-1, const int maxVal=1);
         
-        // Saving/ Loading of Weights
+        // Saving/Loading of Weights
         void saveModel(std::string_view filePath) const;
         void loadModel(std::string_view filePath);
 
         // Helper Functions
         void applyActivation(DoubleVector2D& Z, const size_t layer) const;
         void applyGradientActivation(DoubleVector2D& Z, const size_t layer) const;
+        void printModelInfo(bool printWeights=false) const;
 
         // Main Functions
         ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;

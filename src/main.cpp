@@ -1,5 +1,6 @@
 #include "mlp.h"
 #include "helperfuncs.h"
+#include <cmath>
 #include <cstdint>
 #include <stdexcept>
 #include <string_view>
@@ -35,7 +36,7 @@ void testGettersSetters() {
     printMlpEnum(mlp.getOutputLayerAct());
     mlp.setOutputLayerAct(MLP::ActFunc::ELU);
     printMlpEnum(mlp.getOutputLayerAct());
-    
+
     // loss func 
     std::cout << std::endl;
     std::cout << "Loss Func Testing" << std::endl;
@@ -56,7 +57,7 @@ void testGettersSetters() {
     std::cout << mlp.getDecayRate() << std::endl;
     mlp.setDecayRate(90);
     std::cout << mlp.getDecayRate() << std::endl;
-    
+
     // batchSize 
     std::cout << std::endl;
     std::cout << "Batch Size Testing" << std::endl;
@@ -100,7 +101,7 @@ void testTemplateLossFuncs() {
 
     DoubleVector2D loss;
     loss = mlp.calcLoss(target, preds);
-    
+
     for (const std::vector<double>& row : loss) {
         for (const double& elem : row) {
             std::cout << elem << std::endl;
@@ -110,7 +111,7 @@ void testTemplateLossFuncs() {
     std::cout << std::endl << std::endl;
     DoubleVector2D lossGradient;
     lossGradient = mlp.lossGradient(target, preds);
-    
+
     for (const std::vector<double>& row : lossGradient) {
         for (const double& elem : row) {
             std::cout << elem << std::endl;
@@ -163,63 +164,74 @@ int trainSalarayData() {
 int trainMNIST() {
 
 
-    /* DataMNIST data = importMNIST(); // Import the Data (img, row, col) */
-    /* Uint8Vector3D imgData = data.imgs; */
-    /* std::vector<uint8_t> labelData = data.labels; */
-    /* std::vector<double> doubleLabels = castTargetsFromUint8ToDouble(labelData); */
-    /* DoubleVector2D oneHotLabels = oneHotEncodeTargets(doubleLabels); */
+    DataMNIST data = importMNIST(); // Import the Data (img, row, col)
+    Uint8Vector3D imgData = data.imgs;
+    std::vector<uint8_t> labelData = data.labels;
+    std::vector<double> doubleLabels = castTargetsFromUint8ToDouble(labelData);
+    DoubleVector2D oneHotLabels = oneHotEncodeTargets(doubleLabels);
 
-    /* Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img) */
-    /* DoubleVector2D flatDoubleData = castImgsFromUint8ToDouble(flatData); // Cast to Double */
-    /* normaliseData(flatDoubleData); // Normalise (z-score) */
-    
+    Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img)
+    DoubleVector2D flatDoubleData = castImgsFromUint8ToDouble(flatData); // Cast to Double
+    normaliseData(flatDoubleData); // Normalise (z-score)
 
-    /* // Split Data */
-    /* DoubleVector2D trainData= sliceCols(flatDoubleData, 0, 1000); */
-    /* DoubleVector2D trainLabels = sliceCols(oneHotLabels, 0, 1000); */
+
+    // Split Data
+    DoubleVector2D trainData= sliceCols(flatDoubleData, 0, 1000);
+    DoubleVector2D trainLabels = sliceCols(oneHotLabels, 0, 1000);
 
     // Create mlp object
-    std::vector<int> myStruct = { 10, 5, 7, 2, 10};
+    std::vector<int> myStruct = { 784, 100, 32, 10};
     MLP mlp(myStruct);
 
-    
     // Initialise Weights, Bias and HyperParams
     mlp.initWeights(MLP::InitMethod::UNIFORM);
     mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
+    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
+    mlp.setOutputLayerAct(MLP::ActFunc::SIGMOID);
+    mlp.setLR(0.01);
+    mlp.setBatchSize(32);
+    mlp.setLossFunc(MLP::LossFunc::MSE);
 
-    std::string_view modelPath = "models/test.bin";
-    mlp.saveModel(modelPath);
+    std::string_view modelPath = "models/model1.bin";
     mlp.loadModel(modelPath);
-    return 0;
+    /* mlp.miniBatchGD(trainData, trainLabels, 1000); */
+    /* mlp.saveModel(modelPath); */
+    /* return 0; */
 
-    // How to set Enum using integers
-    mlp.setHiddenLayerAct(static_cast<MLP::ActFunc>(0));
+    /* mlp.printModelInfo(); */
 
-/*     DoubleVector3D weights = mlp.getWeights(); */
-/*     std::cout << weights.size() << std::endl; */
-/*     /1* printDims(const DoubleVector2D &mat) *1/ */
-/*     // Test Saving of weights */
-/*     return 0; */
+    ForwardPropResult result = mlp.forwardProp(sliceCols(trainData, 0, 12));
+    DoubleVector2D outp = result.a[2];
+    printMatrix(outp);
 
+    std::vector<int> preds(outp[0].size());
+    // Find Max idx for each example
+    for (size_t colIdx = 0; colIdx < outp[0].size(); colIdx++) {
+        double RunningMax = -INFINITY;
+        for (size_t rowIdx = 0; rowIdx < outp.size(); rowIdx++) {
+            if (outp[rowIdx][colIdx] > RunningMax) {
+                RunningMax = outp[rowIdx][colIdx];
+                preds[colIdx] = rowIdx;
+            }
+        }
+    }
 
+    std::string choice;
+    for (size_t imgIdx = 0; imgIdx < preds.size(); imgIdx++) {
 
+        printMNISTImg(imgData[imgIdx], 128);
+        std::cout << std::endl << "Preditiction: "<< preds[imgIdx] << std::endl;
+        std::cout << "Label: " << static_cast<int>(labelData[imgIdx]) << std::endl;
+        std::cout << std::endl << "Press any key to view the next image, or 'e' to exit" << std::endl;
+        std::cin >> choice;
 
-/*     mlp.setOutputLayerAct(MLP::ActFunc::RELU); */
-/*     mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID); */
-/*     mlp.setLR(0.1); */
-
-/*     mlp.miniBatchGD(trainData, trainLabels, 1000); */
-
-
-  
-
-
-
-    return 0;
-    /* size_t imgIdx = 1; */
+        if (choice == "e") {
+            break;
+        }
+    }
     /* imgData = buildImgFromFlat(flatData); */
-    /* printMNISTImg(imgData[imgIdx], 128); */
-    /* std::cout << static_cast<int>(labelData[imgIdx]) << std::endl; */
+
+    return 0;
 }
 
 

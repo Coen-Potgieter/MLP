@@ -100,24 +100,24 @@ void MLP::setBatchSize(const int newBatchSize) {
     this->batchSize = newBatchSize;
 }
 
-void MLP::initWeights(InitMethod method, const int minVal, const int maxVal) {
+void MLP::initWeights(InitMethod method, const double minVal, const double maxVal) {
 
     for (size_t layer = 0; layer < weights.size(); layer ++) {
         for (size_t row = 0; row < weights[layer].size(); row++){
             // Note the start index of col here since the first column is reserved for bias
             for (size_t col = 1; col < weights[layer][row].size(); col++){
-                const double randomWeight = (rand() % ((maxVal - minVal) * 1000)) / 1000.0 + minVal;
+                const double randomWeight = (rand() % static_cast<int>((maxVal - minVal) * 1000)) / 1000.0 + minVal;
                 this->weights[layer][row][col] = randomWeight;
             }
         }
     }
 }
 
-void MLP::initBias(InitMethod method, const int minVal, const int maxVal) {
+void MLP::initBias(InitMethod method, const double minVal, const double maxVal) {
     for (size_t layer = 0; layer < this->weights.size(); layer ++) {
         for (size_t row = 0; row < this->weights[layer].size(); row++){
             // Uniform
-            const double randomWeight = (rand() % ((maxVal - minVal) * 1000)) / 1000.0 + minVal;
+            const double randomWeight = (rand() % static_cast<int>((maxVal - minVal) * 1000)) / 1000.0 + minVal;
             // Only populate the first column
             this->weights[layer][row][0] = randomWeight;
         }
@@ -162,16 +162,32 @@ void MLP::applyActivation(DoubleVector2D& Z, const size_t layer) const {
         case MLP::ActFunc::ELU:
             actFuncPtr = &elu;
             break;
+        case MLP::ActFunc::SOFTMAX:
+            Z = transpose(Z);
+            for (std::vector<double>& row : Z) {
+                row = softmax(row);
+            }
+            Z = transpose(Z);
+            return;
+            break;
         default:
             throw std::logic_error("Activation Function Has Not Yet Been Implemented");
     }
 
-    // Apply Activation Function to each element
-    for (std::vector<double>& row : Z) {
-        for (double& elem : row) {
-            elem = actFuncPtr(elem);
+    bool passInVector = (actFuncToUse == ActFunc::SOFTMAX);
+
+    if (passInVector) {
+        // 
+
+    } else{
+        // Apply Activation Function to each element
+        for (std::vector<double>& row : Z) {
+            for (double& elem : row) {
+                elem = actFuncPtr(elem);
+            }
         }
     }
+    
     return;
 }
 void MLP::applyGradientActivation(DoubleVector2D& Z, const size_t layer) const {
@@ -301,11 +317,15 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
     std::vector<double> row1s(inp[0].size(), 1.0);
     inp.insert(inp.begin(), row1s);
 
+    bool softmaxMode = (this->getOutputLayerAct() == MLP::ActFunc::SOFTMAX); 
+
     for (int layer = numLayers - 1; layer >= 0; layer--) {
 
         DEBUG_LOG("BackProp for Layer: " << layer);
         // Apply activation Gradient to Net Function output Z
-        applyGradientActivation(resForwardProp.z[layer], layer);
+        if (!(softmaxMode && (layer == (numLayers - 1)))) {
+            applyGradientActivation(resForwardProp.z[layer], layer);
+        }
 
         // Get Current Weights (slice out first col)
         onlyWeights[layer] = sliceCols(this->weights[layer], 1, this->weights[layer][0].size() -1);
@@ -317,7 +337,13 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
             // If Hidden Layer then use nueron differential matrix one layer up
             tmpLayerDifferentials = matrixMultiply(transpose(onlyWeights[layer + 1]), layerDifferentials[layer+1]);
         }
-        layerDifferentials[layer] = elementWiseMatrixMultiply(tmpLayerDifferentials, resForwardProp.z[layer]);
+
+        // For Softmax & CE (expirimental)
+        if (softmaxMode && (layer == (numLayers - 1))) {
+            layerDifferentials[layer] = tmpLayerDifferentials;
+        } else {
+            layerDifferentials[layer] = elementWiseMatrixMultiply(tmpLayerDifferentials, resForwardProp.z[layer]);
+        }
 
 
         // Neuron Differentials Done, now we can do weight and bias updates
@@ -346,6 +372,15 @@ void MLP::singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector
 
 void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, const size_t numEpochs) {
 
+    // Check if Softmax is not paired with CE loss
+    bool softmaxApplied = (this->getOutputLayerAct() == MLP::ActFunc::SOFTMAX);
+    bool entropyApplied = (this->getLossFunc() == MLP::LossFunc::ENTROPY);
+
+    // Logical XOR
+    if (!softmaxApplied != !entropyApplied){
+        std::cerr << "Must have either Both Softmax & Entropy or Neither, Stop trying to fuck my system :/" << std::endl;
+        return;
+    } 
 
     const size_t numExamples = data[0].size();
     const size_t numLayers = this->weights.size();
@@ -384,10 +419,11 @@ void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, 
             this->singleBackPropItter(dataBatch, targetBatch);
         }
 
+
         // 3. Assess Error
         forwardRes = this->forwardProp(data);
-        lossMatrix = calcLoss(target, forwardRes.a[numLayers-1]);
-        totalError = sumMatrixElems(lossMatrix);
+
+        totalError = calcLoss(target, forwardRes.a[numLayers-1]);
 
         std::cout << "Total Error For Epoch " << epochIdx + 1 << ": " << totalError << std::endl;
     }

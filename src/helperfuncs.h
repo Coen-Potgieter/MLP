@@ -48,10 +48,12 @@ double relu(const double z);
 double tanh(const double z);
 double sigmoid(const double z);
 double elu(const double z);
+std::vector<double> softmax(const std::vector<double>& Z);
 double derivativeRelu(const double z);
 double derivativeTanh(const double z);
 double derivativeSigmoid(const double z);
 double derivativeElu(const double z);
+std::vector<double> derivativeSoftmax(const std::vector<double>& Z);
 
 // Importing Functions
 DoubleVector2D importCSV(std::string_view pathToCSV);

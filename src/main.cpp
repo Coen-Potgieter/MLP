@@ -99,14 +99,11 @@ void testTemplateLossFuncs() {
     preds[1][2] = 12;
     preds[2][2] = 15;
 
-    DoubleVector2D loss;
+    double loss;
     loss = mlp.calcLoss(target, preds);
 
-    for (const std::vector<double>& row : loss) {
-        for (const double& elem : row) {
-            std::cout << elem << std::endl;
-        }
-    }
+
+    std::cout << loss << std::endl;
 
     std::cout << std::endl << std::endl;
     DoubleVector2D lossGradient;
@@ -184,17 +181,17 @@ int trainMNIST() {
     MLP mlp(myStruct);
 
     // Initialise Weights, Bias and HyperParams
-    mlp.initWeights(MLP::InitMethod::UNIFORM);
-    mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
-    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
-    mlp.setOutputLayerAct(MLP::ActFunc::SIGMOID);
+    mlp.initWeights(MLP::InitMethod::UNIFORM, -0.1, 0.1);
+    mlp.initBias(MLP::InitMethod::UNIFORM, -0.1, 0.1);
+    mlp.setHiddenLayerAct(MLP::ActFunc::RELU);
+    mlp.setOutputLayerAct(MLP::ActFunc::SOFTMAX);
     mlp.setLR(0.01);
     mlp.setBatchSize(32);
-    mlp.setLossFunc(MLP::LossFunc::MSE);
+    mlp.setLossFunc(MLP::LossFunc::ENTROPY);
 
-    std::string_view modelPath = "models/model1.bin";
+    std::string_view modelPath = "models/model2.bin";
     mlp.loadModel(modelPath);
-    /* mlp.miniBatchGD(trainData, trainLabels, 1000); */
+    /* mlp.miniBatchGD(trainData, trainLabels, 100); */
     /* mlp.saveModel(modelPath); */
     /* return 0; */
 

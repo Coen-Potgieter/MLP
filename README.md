@@ -19,7 +19,7 @@
     - Seem logical to have some class called `MLP` to hold all the functions and hyperparams
 
 2. **Usage of Vectors**
-    - I originally prioritized efficiency, thus though arrays everywhere was best
+    - I originally prioritized efficiency, thus I thought arrays everywhere was best
     - After some complexity overheads due to naivety of implementation I decided to use mostly Vectors
     - This way i can dynamically add rows, cols to my matrices
     - I may come back later to convert things to arrays where applicable

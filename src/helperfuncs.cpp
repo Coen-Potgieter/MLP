@@ -1,8 +1,8 @@
 #include "helperfuncs.h"
 #include "debug_log.h"
 #include "mlp.h"
-#include <cstdint>
-#include <stdexcept>
+#include <cmath>
+#include <cstdlib>
 
 void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
@@ -37,6 +37,22 @@ double elu(const double z) {
     } else {
         return std::exp(z) - 1;
     }
+}
+
+
+std::vector<double> softmax(const std::vector<double>& Z) {
+    std::vector<double> expVals;
+    double expSum = 0.00001;
+    for (const double& z : Z) {
+        double expZ = std::exp(z);
+        expVals.push_back(expZ);
+        expSum += expZ;
+    }
+
+    for (size_t i = 0; i < expVals.size(); i++) {
+        expVals[i] /= expSum;
+    }
+    return expVals;
 }
 double derivativeRelu(const double z) {
     if (z < 0) {
@@ -150,8 +166,8 @@ void printMlpEnum(MLP::ActFunc inpEnum) {
 void printMlpEnum(MLP::LossFunc inpEnum) {
 
     switch(inpEnum) {
-        case MLP::LossFunc::MSE:
-            std::cout << "MSE" << std::endl;
+        case MLP::LossFunc::SSE:
+            std::cout << "SSE" << std::endl;
             break;
         case MLP::LossFunc::ENTROPY:
             std::cout << "ENTROPY" << std::endl;

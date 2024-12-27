@@ -1,5 +1,6 @@
 #include "mlp.h"
 #include "helperfuncs.h"
+#include <cmath>
 #include <cstdint>
 
 
@@ -100,13 +101,14 @@ void MLP::setBatchSize(const int newBatchSize) {
     this->batchSize = newBatchSize;
 }
 
-void MLP::initWeights(InitMethod method, const double minVal, const double maxVal) {
+void MLP::initWeights(InitMethod method, double* params) {
 
     switch(method) {
         case MLP::InitMethod::UNIFORM_RANDOM:
-            initUniformRandom(this->weights, minVal, maxVal, true);
+            initUniformRandom(this->weights, params[0], params[1], true);
             break;
         case MLP::InitMethod::GAUSSIAN_RANDOM:
+            initGaussianRandom(this->weights, params[0], params[1], true);
             break;
         default:
             std::cerr << "This Init Method Has Not Yet Been Implemented..." << std::endl;
@@ -114,12 +116,13 @@ void MLP::initWeights(InitMethod method, const double minVal, const double maxVa
     }
 }
 
-void MLP::initBias(InitMethod method, const double minVal, const double maxVal) {
+void MLP::initBias(InitMethod method, double* params) {
     switch(method) {
         case MLP::InitMethod::UNIFORM_RANDOM:
-            initUniformRandom(this->weights, minVal, maxVal, false);
+            initUniformRandom(this->weights, params[0], params[1], false);
             break;
         case MLP::InitMethod::GAUSSIAN_RANDOM:
+            initGaussianRandom(this->weights, params[0], params[1], false);
             break;
         default:
             std::cerr << "This Init Method Has Not Yet Been Implemented..." << std::endl;
@@ -448,10 +451,37 @@ void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, 
             }
             return;
         }
-        std::cout << "Total Error For Epoch " << epochIdx + 1 << ": " << totalError << std::endl;
+        std::cout << "Total Error For Epoch " << epochIdx + 1 << "/" << numEpochs << ": " << totalError << std::endl;
     }
 }
 
+std::vector<uint8_t> MLP::predict(const DoubleVector2D& data) {
+
+
+    /* printDims(data); */
+    ForwardPropResult res = this->forwardProp(data);
+    DoubleVector2D outputVecs = res.a[this->weights.size() - 1];
+
+
+    const size_t numClasses = outputVecs.size();
+    const size_t numExamples = outputVecs[0].size();
+    std::vector<uint8_t> preds(numExamples);
+
+    uint8_t maxIdx;
+    for (size_t exampleIdx = 0; exampleIdx < numExamples; exampleIdx++) {
+        double maxVal = -INFINITY;
+
+        for (uint8_t k = 0; k < numClasses; k++) {
+
+            if (maxVal < outputVecs[k][exampleIdx]) {
+                maxVal = outputVecs[k][exampleIdx];
+                maxIdx = k;
+            }
+        }
+        preds[exampleIdx] = maxIdx;
+    }
+    return preds;
+}
 void MLP::saveModel(std::string_view filePath) const {
 
     // Check if File Exists
@@ -644,7 +674,7 @@ void MLP::loadModel(std::string_view filePath) {
     this->setLossFunc(static_cast<LossFunc>(readLossFunc));
     this->setLR(readInitialLR);
     this->setBatchSize(readBatchSize);
-    this->setWeights(readWeights);
+    this->weights = readWeights;
 
     std::cout << "New Model Loaded & Ready To Go!" << std::endl;
     return;

@@ -62,8 +62,8 @@ public:
     void setBatchSize(const int newBatchSize);
 
     // Initialisation Methods
-    void initWeights(InitMethod method, const double minVal=-1, const double maxVal=1);
-    void initBias(InitMethod method, const double minVal=-1, const double maxVal=1);
+    void initWeights(InitMethod method, double* params);
+    void initBias(InitMethod method, double* params);
 
     // Saving/Loading of Weights
     void saveModel(std::string_view filePath) const;
@@ -79,6 +79,7 @@ public:
     ForwardPropResult forwardProp(const DoubleVector2D& inpQuery) const;
     void singleBackPropItter(const DoubleVector2D& inpBatch, const DoubleVector2D& target);
     void miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, const size_t numEpochs=15);
+    std::vector<uint8_t> predict(const DoubleVector2D& data);
 
     // Template For Loss Functions, See README or obsidian notes
     template <NumericMatrix Mat>

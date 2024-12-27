@@ -2,7 +2,9 @@
 #include "debug_log.h"
 #include "mlp.h"
 #include <cmath>
+#include <cstdint>
 #include <cstdlib>
+#include <random>
 
 void printMatrix(const DoubleVector2D& mat) {
     for (const std::vector<double>& row : mat) {
@@ -173,6 +175,9 @@ void printMlpEnum(MLP::ActFunc inpEnum) {
         case MLP::ActFunc::ELU:
             std::cout << "ELU" << std::endl;
             break;
+        case MLP::ActFunc::SOFTMAX:
+            std::cout << "SOFTMAX" << std::endl;
+            break;
         default:
             std::cout << "Printing for this not implemented just yet, so get here and do it" << std::endl;
     }
@@ -282,6 +287,36 @@ void initUniformRandom(DoubleVector3D& inp, const double minVal, const double ma
             // Note the start index of col here since the first column is reserved for bias
             for (size_t col = startingCol; col < numCols[layer]; col++){
                 const double randomWeight = (rand() % static_cast<int>((maxVal - minVal) * 1000)) / 1000.0 + minVal;
+                inp[layer][row][col] = randomWeight;
+            }
+        }
+    }
+}
+void initGaussianRandom(DoubleVector3D& inp, const double mean, double sd, const bool isWeights) {
+
+    size_t startingCol = (isWeights) ? 1 : 0;
+
+    size_t numLayers = inp.size();
+    std::vector<double> numRows(numLayers);
+    std::vector<double> numCols(numLayers);
+
+    for (size_t layer = 0; layer < numLayers; layer ++) {
+        numRows[layer] = inp[layer].size();
+        numCols[layer] = (isWeights) ? inp[layer][0].size() : 1;
+    }
+
+    std::random_device rd{};
+    std::mt19937 gen{rd()};
+    bool dynamicStdDev = (!sd);
+
+    for (size_t layer = 0; layer < numLayers; layer ++) {
+        for (size_t row = 0; row < numRows[layer]; row++){
+            if (dynamicStdDev) {
+                sd = 1 / std::sqrt(inp[layer][0].size());
+            }
+            std::normal_distribution<> gd(mean, sd);
+            for (size_t col = startingCol; col < numCols[layer]; col++){
+                const double randomWeight = gd(gen);
                 inp[layer][row][col] = randomWeight;
             }
         }
@@ -621,20 +656,117 @@ std::vector<double> castTargetsFromUint8ToDouble(const std::vector<uint8_t>& lab
 }
 
 
-DoubleVector2D oneHotEncodeTargets(const std::vector<double>& labels) {
+Uint8Vector2D oneHotEncodeTargets(const std::vector<uint8_t>& labels) {
 
     const int numLabels = labels.size();
 
-    DoubleVector2D outp(10, std::vector<double>(numLabels, 0.0));
+    Uint8Vector2D outp(10, std::vector<uint8_t>(numLabels, 0));
 
     uint8_t oneHotLabelIdx;
     for (size_t labelIdx = 0; labelIdx < numLabels; labelIdx++) {
         oneHotLabelIdx = labels[labelIdx];
-        outp[oneHotLabelIdx][labelIdx] = 1.0;
+        outp[oneHotLabelIdx][labelIdx] = 1;
     }
     return outp;
 }
 
+void displayPredsMNIST(const Uint8Vector3D& imgData, const std::vector<uint8_t>& labels, const std::vector<uint8_t>& preds) {
+
+
+    // Ensure each input has same number of examples
+    const size_t numExamples = labels.size();
+
+    if ((imgData.size() != numExamples) || (preds.size() != numExamples)) {
+        std::cerr << "Inconsistent number of examples inputted" << std::endl;
+    }
+
+    // Firstly run preds vs labels and get accuracy score
+    int correctCounter = 0;
+
+    IntVector2D collectedExamples(10);
+    for (int i = 0; i < numExamples; i++) {
+        correctCounter += static_cast<int>(labels[i] == preds[i]);
+        collectedExamples[labels[i]].push_back(i);
+    }
+
+    double accuracy = (correctCounter / static_cast<double>(numExamples)) * 100;
+    bool invalidChoice = true;
+    std::string choice;
+    int idx = 0;
+    int chosenDigit = -1;
+    int chosenDigitIdx = 0;
+    while (true) {
+
+        std::cout << "\nShowing Example Number: " << idx+1 << "/" << numExamples << std::endl;
+        printMNISTImg(imgData[idx]);
+        std::cout << "Total Model Accuracy: " << accuracy << std::endl;
+        std::cout << "Target -> " << static_cast<int>(labels[idx]) << std::endl;
+        std::cout << "Prediction -> " << static_cast<int>(preds[idx]) << std::endl;
+
+        invalidChoice = true;
+        while (invalidChoice) {
+            std::cout << "\nOptions: " << std::endl << 
+                "\tQuit -> (q)" << std::endl << 
+                "\tNext Example -> (n)" << std::endl <<
+                "\tRandom Example -> (r)" << std::endl <<
+                "\tExample of Digit <0-9> -> (:<0-9>)" << std::endl;
+            std::cin >> choice;
+            if (choice == "q") {
+                return;
+            } else if (choice == "r") {
+                idx = rand() % numExamples;
+                chosenDigit = -1;
+                chosenDigitIdx = 0;
+                invalidChoice = false;
+
+            } else if (choice == "n") {
+                if (chosenDigit != -1) {
+                    chosenDigitIdx += 1;
+                    if (chosenDigitIdx >= collectedExamples[chosenDigit].size()) {
+                        chosenDigitIdx = 0;
+                    }
+                    idx = collectedExamples[chosenDigit][chosenDigitIdx];
+
+                } else {
+                    idx += 1;
+                    if (idx >= numExamples) {
+                        idx = 0;
+                    }
+                }
+                invalidChoice = false;
+            } else if (choice[0] == ':') {
+
+                bool incorrectUsage = false;
+                int chosenNum;
+                try{
+                    chosenNum = std::stoi(choice.substr(1, choice.length() - 1));
+                    if (chosenNum >= 10 || chosenNum <= -1) {
+                        incorrectUsage = true;
+                    }
+
+                } catch(std::invalid_argument& e) {
+                    incorrectUsage = true;
+                }
+                if (incorrectUsage) {
+                    std::cout << "Incorrect Usage Of Example of Digit";
+                } else{
+
+                    chosenDigit = chosenNum;
+                    chosenDigitIdx = 0;
+                    idx = collectedExamples[chosenDigit][chosenDigitIdx];
+                    invalidChoice = false;
+                }
+
+            } else {
+                std::cout << "\nPlease Select a Valid Option!";
+            }
+
+        }
+
+
+    }
+
+}
 
 
 

@@ -7,6 +7,7 @@
 #include <fstream>
 #include <filesystem>
 #include <algorithm>
+#include <random>
 #include "alias.h"
 #include "mlp.h"
 
@@ -34,16 +35,17 @@ double sumMatrixElems(const DoubleVector2D& inpMatrix);
 double maxValInVector(const std::vector<double>& inpVec);
 
 // Pre-processing Operations
-void initUniformRandom(DoubleVector3D& inp, const double minVal, const double maxVal, const bool isWeights);
+void initUniformRandom(DoubleVector3D& inp, const double minVal=-0.1, const double maxVal=0.1, const bool isWeights=true);
+void initGaussianRandom(DoubleVector3D& inp, const double mean=0, double sd=0, const bool isWeights=true);
 void normaliseData(DoubleVector2D& data);
 std::vector<std::string> separateRow(const std::string& content);
 DoubleVector2D separateTarget(DoubleVector2D& data, std::vector<int>& targetCols);
 DoubleVector2D sliceCols(const DoubleVector2D& inpMatrix, const size_t startIdx, const size_t endIdx);
 Uint8Vector2D Flatten3DTensor(const Uint8Vector3D& data);
-Uint8Vector3D buildImgFromFlat(const Uint8Vector2D& flatData);
+Uint8Vector3D buildImgFromFlat(DoubleVector3D& flatData);
 DoubleVector2D castImgsFromUint8ToDouble(const Uint8Vector2D& data);
 std::vector<double> castTargetsFromUint8ToDouble(const std::vector<uint8_t>& labels);
-DoubleVector2D oneHotEncodeTargets(const std::vector<double>& labels);
+Uint8Vector2D oneHotEncodeTargets(const std::vector<uint8_t>& labels);
 
 // Activations And Gradients
 double relu(const double z);
@@ -62,6 +64,7 @@ std::vector<double> derivativeSoftmax(const std::vector<double>& Z);
 // Importing Functions
 DoubleVector2D importCSV(std::string_view pathToCSV);
 DataMNIST importMNIST();
+void displayPredsMNIST(const Uint8Vector3D& imgData, const std::vector<uint8_t>& labels, const std::vector<uint8_t>& preds);
 
 
 

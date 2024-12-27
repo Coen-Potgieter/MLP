@@ -9,10 +9,11 @@ void testGettersSetters();
 void testTemplateLossFuncs();
 int trainSalarayData();
 int trainMNIST();
-
+int predictMNIST();
 
 int main() {
 
+    return predictMNIST();
     return trainMNIST();
     return trainSalarayData();
     return 0;
@@ -150,11 +151,12 @@ int trainSalarayData() {
     MLP mlp(myStruct);
 
     // Initialise Weights, Bias and HyperParams
-    mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM);
-    mlp.initBias(MLP::InitMethod::UNIFORM_RANDOM, -1, 1);
-    mlp.setOutputLayerAct(MLP::ActFunc::RELU);
-    mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
-    mlp.setLR(0.01);
+    /* double */ 
+    /* mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM); */
+    /* mlp.initBias(MLP::InitMethod::UNIFORM_RANDOM, -1, 1); */
+    /* mlp.setOutputLayerAct(MLP::ActFunc::RELU); */
+    /* mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID); */
+    /* mlp.setLR(0.01); */
 
     mlp.miniBatchGD(data, targets, 100000);
     return 0;
@@ -162,87 +164,76 @@ int trainSalarayData() {
 
 int trainMNIST() {
 
+    std::cout << "\nImporting MNIST Dataset..." << std::endl;
 
-    DataMNIST data = importMNIST(); // Import the Data (img, row, col)
-    Uint8Vector3D imgData = data.imgs;
-    std::vector<uint8_t> labelData = data.labels;
-    std::vector<double> doubleLabels = castTargetsFromUint8ToDouble(labelData);
-    DoubleVector2D oneHotLabels = oneHotEncodeTargets(doubleLabels);
+    // Preparing Data / Pre-proccessing
+    DataMNIST* data = new DataMNIST(importMNIST()); 
+    DoubleVector2D* flatDoubleData = new DoubleVector2D(castImgsFromUint8ToDouble(Flatten3DTensor(data->imgs)));
+    DoubleVector2D* targets = new DoubleVector2D(castImgsFromUint8ToDouble(oneHotEncodeTargets(data->labels)));
+    delete data;
 
-    Uint8Vector2D flatData = Flatten3DTensor(imgData); // Flatten the data (pixel, img)
-    DoubleVector2D flatDoubleData = castImgsFromUint8ToDouble(flatData); // Cast to Double
-    normaliseData(flatDoubleData); // Normalise (z-score)
-
-
+    normaliseData(*flatDoubleData); // Normalise (z-score)
+    
     // Split Data
-    DoubleVector2D trainData= sliceCols(flatDoubleData, 0, 1000);
-    DoubleVector2D trainLabels = sliceCols(oneHotLabels, 0, 1000);
+    DoubleVector2D trainData= sliceCols(*flatDoubleData, 0, 9000);
+    DoubleVector2D trainLabels = sliceCols(*targets, 0, 9000);
+    delete flatDoubleData;
+    delete targets;
 
     // Create mlp object
-    std::vector<int> myStruct = { 784, 100, 32, 10};
+    std::vector<int> myStruct = { 784, 256, 128, 64, 10};
     MLP mlp(myStruct);
 
     // Initialise Weights, Bias and HyperParams
-    /* mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM, -0.1, 0.1); */
-    /* mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM, -1, 1); */
-    mlp.initBias(MLP::InitMethod::UNIFORM_RANDOM, -0.1, 0.1);
-    DoubleVector3D myW = mlp.getWeights();
-    printMatrix(myW[1]);
-    return 0;
+    double initParams[] = { 0, 0.01 };
+    mlp.initWeights(MLP::InitMethod::GAUSSIAN_RANDOM, initParams);
+    /* mlp.initBias(MLP::InitMethod::GAUSSIAN_RANDOM, params); */
     mlp.setHiddenLayerAct(MLP::ActFunc::RELU);
     mlp.setOutputLayerAct(MLP::ActFunc::SOFTMAX);
-    mlp.setLR(0.01);
-    mlp.setBatchSize(32);
+    mlp.setLR(0.001);
+    mlp.setBatchSize(64);
     mlp.setLossFunc(MLP::LossFunc::ENTROPY);
 
-    // Exploration of where Nan comes from...
-    /* ForwardPropResult res = mlp.forwardProp(sliceCols(trainData, 0, 3)); */
-    /* DoubleVector2D outpLayer = res.a[2]; */
-    /* printMatrix(outpLayer); */
-    /* return 0; */
-
-    /* std::string_view modelPath = "models/model2.bin"; */
+    std::string_view modelPath = "models/model2.bin";
     /* mlp.loadModel(modelPath); */
+
+    std::cout << "Now Training The Model: \n" << std::endl;
+    mlp.printModelInfo(false);
     mlp.miniBatchGD(trainData, trainLabels, 100);
-    /* mlp.saveModel(modelPath); */
-    /* return 0; */
-
-    /* mlp.printModelInfo(); */
-
-    ForwardPropResult result = mlp.forwardProp(sliceCols(trainData, 0, 12));
-    DoubleVector2D outp = result.a[2];
-    printMatrix(outp);
-
-    std::vector<int> preds(outp[0].size());
-    // Find Max idx for each example
-    for (size_t colIdx = 0; colIdx < outp[0].size(); colIdx++) {
-        double RunningMax = -INFINITY;
-        for (size_t rowIdx = 0; rowIdx < outp.size(); rowIdx++) {
-            if (outp[rowIdx][colIdx] > RunningMax) {
-                RunningMax = outp[rowIdx][colIdx];
-                preds[colIdx] = rowIdx;
-            }
-        }
-    }
-
-    std::string choice;
-    for (size_t imgIdx = 0; imgIdx < preds.size(); imgIdx++) {
-
-        printMNISTImg(imgData[imgIdx], 128);
-        std::cout << std::endl << "Preditiction: "<< preds[imgIdx] << std::endl;
-        std::cout << "Label: " << static_cast<int>(labelData[imgIdx]) << std::endl;
-        std::cout << std::endl << "Press any key to view the next image, or 'e' to exit" << std::endl;
-        std::cin >> choice;
-
-        if (choice == "e") {
-            break;
-        }
-    }
-    /* imgData = buildImgFromFlat(flatData); */
-
+    mlp.saveModel(modelPath);
     return 0;
 }
 
+int predictMNIST() {
 
+    // Import Data
+    DataMNIST data = importMNIST(); 
+    Uint8Vector3D imgData = data.imgs;
+    std::vector<uint8_t> labelData = data.labels;
+
+    // One Hot encode Data
+    Uint8Vector2D oneHotLabels = oneHotEncodeTargets(labelData);
+    // Make image data compatable with MLP
+    DoubleVector2D* flatDoubleData = new DoubleVector2D();
+    *flatDoubleData = castImgsFromUint8ToDouble(Flatten3DTensor(imgData)); 
+    normaliseData(*flatDoubleData);
+
+    // Init MLP, this is trivial since we loading one
+    std::vector<int> myStruct = { 1, 1};
+    MLP mlp(myStruct);
+    std::string_view modelPath = "models/model2.bin";
+    mlp.loadModel("models/model2.bin");
+
+    /* mlp.printModelInfo(); */
+
+    /* return 0; */
+    /* printDims(*flatDoubleData); */
+    /* return 0; */
+    std::vector<uint8_t> preds = mlp.predict(*flatDoubleData);
+    delete flatDoubleData;
+
+    displayPredsMNIST(imgData, labelData, preds);
+    return 0;
+}
 
 

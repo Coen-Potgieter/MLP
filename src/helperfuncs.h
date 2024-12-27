@@ -31,8 +31,10 @@ DoubleVector2D matrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& 
 DoubleVector2D elementWiseMatrixMultiply(const DoubleVector2D& mat1, const DoubleVector2D& mat2);
 DoubleVector2D transpose(const DoubleVector2D& matrix);
 double sumMatrixElems(const DoubleVector2D& inpMatrix);
+double maxValInVector(const std::vector<double>& inpVec);
 
 // Pre-processing Operations
+void initUniformRandom(DoubleVector3D& inp, const double minVal, const double maxVal, const bool isWeights);
 void normaliseData(DoubleVector2D& data);
 std::vector<std::string> separateRow(const std::string& content);
 DoubleVector2D separateTarget(DoubleVector2D& data, std::vector<int>& targetCols);
@@ -48,7 +50,9 @@ double relu(const double z);
 double tanh(const double z);
 double sigmoid(const double z);
 double elu(const double z);
+std::vector<double> softmaxHandler(const std::vector<double>& Z, bool normaliseInput=true);
 std::vector<double> softmax(const std::vector<double>& Z);
+
 double derivativeRelu(const double z);
 double derivativeTanh(const double z);
 double derivativeSigmoid(const double z);

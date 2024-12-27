@@ -10,7 +10,9 @@ void testTemplateLossFuncs();
 int trainSalarayData();
 int trainMNIST();
 
+
 int main() {
+
     return trainMNIST();
     return trainSalarayData();
     return 0;
@@ -148,8 +150,8 @@ int trainSalarayData() {
     MLP mlp(myStruct);
 
     // Initialise Weights, Bias and HyperParams
-    mlp.initWeights(MLP::InitMethod::UNIFORM);
-    mlp.initBias(MLP::InitMethod::UNIFORM, -1, 1);
+    mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM);
+    mlp.initBias(MLP::InitMethod::UNIFORM_RANDOM, -1, 1);
     mlp.setOutputLayerAct(MLP::ActFunc::RELU);
     mlp.setHiddenLayerAct(MLP::ActFunc::SIGMOID);
     mlp.setLR(0.01);
@@ -181,17 +183,27 @@ int trainMNIST() {
     MLP mlp(myStruct);
 
     // Initialise Weights, Bias and HyperParams
-    mlp.initWeights(MLP::InitMethod::UNIFORM, -0.1, 0.1);
-    mlp.initBias(MLP::InitMethod::UNIFORM, -0.1, 0.1);
+    /* mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM, -0.1, 0.1); */
+    /* mlp.initWeights(MLP::InitMethod::UNIFORM_RANDOM, -1, 1); */
+    mlp.initBias(MLP::InitMethod::UNIFORM_RANDOM, -0.1, 0.1);
+    DoubleVector3D myW = mlp.getWeights();
+    printMatrix(myW[1]);
+    return 0;
     mlp.setHiddenLayerAct(MLP::ActFunc::RELU);
     mlp.setOutputLayerAct(MLP::ActFunc::SOFTMAX);
     mlp.setLR(0.01);
     mlp.setBatchSize(32);
     mlp.setLossFunc(MLP::LossFunc::ENTROPY);
 
-    std::string_view modelPath = "models/model2.bin";
-    mlp.loadModel(modelPath);
-    /* mlp.miniBatchGD(trainData, trainLabels, 100); */
+    // Exploration of where Nan comes from...
+    /* ForwardPropResult res = mlp.forwardProp(sliceCols(trainData, 0, 3)); */
+    /* DoubleVector2D outpLayer = res.a[2]; */
+    /* printMatrix(outpLayer); */
+    /* return 0; */
+
+    /* std::string_view modelPath = "models/model2.bin"; */
+    /* mlp.loadModel(modelPath); */
+    mlp.miniBatchGD(trainData, trainLabels, 100);
     /* mlp.saveModel(modelPath); */
     /* return 0; */
 

@@ -40,7 +40,22 @@ double elu(const double z) {
 }
 
 
+std::vector<double> softmaxHandler(const std::vector<double>& Z, bool normaliseInput) {
+    // if normalise, make a copy of the vector
+    if (normaliseInput) {
+        const double maxVal = maxValInVector(Z);
+        std::vector<double> Zcopy(Z.size());
+        for (size_t i = 0; i < Z.size(); i++) {
+            Zcopy[i] = Z[i] - maxVal;
+        }
+        return softmax(Zcopy);
+    } else {
+        return softmax(Z);
+    }
+}
+
 std::vector<double> softmax(const std::vector<double>& Z) {
+
     std::vector<double> expVals;
     double expSum = 0.00001;
     for (const double& z : Z) {
@@ -132,11 +147,11 @@ DoubleVector2D elementWiseMatrixMultiply(const DoubleVector2D& mat1, const Doubl
 
 void printMlpEnum(MLP::InitMethod inpEnum) {
     switch(inpEnum) {
-        case MLP::InitMethod::UNIFORM:
-            std::cout << "UNIFORM" << std::endl;
+        case MLP::InitMethod::UNIFORM_RANDOM:
+            std::cout << "UNIFORM_RANDOM" << std::endl;
             break;
-        case MLP::InitMethod::GAUSSIAN:
-            std::cout << "GAUSSIAN" << std::endl;
+        case MLP::InitMethod::GAUSSIAN_RANDOM:
+            std::cout << "GAUSSIAN_RANDOM" << std::endl;
             break;
         default:
             std::cout << "Printing for this not implemented just yet, so get here and do it" << std::endl;
@@ -248,6 +263,29 @@ DoubleVector2D importCSV(std::string_view pathToCSV) {
 
     fin.close();
     return outp;
+}
+
+void initUniformRandom(DoubleVector3D& inp, const double minVal, const double maxVal, const bool isWeights) {
+
+    size_t startingCol = (isWeights) ? 1 : 0;
+
+    size_t numLayers = inp.size();
+    std::vector<double> numRows(numLayers);
+    std::vector<double> numCols(numLayers);
+
+    for (size_t layer = 0; layer < numLayers; layer ++) {
+        numRows[layer] = inp[layer].size();
+        numCols[layer] = (isWeights) ? inp[layer][0].size() : 1;
+    }
+    for (size_t layer = 0; layer < numLayers; layer ++) {
+        for (size_t row = 0; row < numRows[layer]; row++){
+            // Note the start index of col here since the first column is reserved for bias
+            for (size_t col = startingCol; col < numCols[layer]; col++){
+                const double randomWeight = (rand() % static_cast<int>((maxVal - minVal) * 1000)) / 1000.0 + minVal;
+                inp[layer][row][col] = randomWeight;
+            }
+        }
+    }
 }
 
 // z-Score Normalisation
@@ -373,6 +411,16 @@ double sumMatrixElems(const DoubleVector2D& inpMatrix) {
         }
     }
     return runningSum;
+}
+
+double maxValInVector(const std::vector<double>& inpVec) {
+    double maxVal = -INFINITY;
+    for (const double& elem : inpVec) {
+        if (maxVal < elem) {
+            maxVal = elem;
+        }
+    }
+    return maxVal;
 }
 
 

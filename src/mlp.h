@@ -25,8 +25,8 @@ class MLP {
 public:
     // Enum for implementation
     enum class InitMethod {
-        UNIFORM,
-        GAUSSIAN // TODO: Implement this
+        UNIFORM_RANDOM,
+        GAUSSIAN_RANDOM // TODO: Implement this
     };
     enum class ActFunc {
         SIGMOID,
@@ -70,6 +70,7 @@ public:
     void loadModel(std::string_view filePath);
 
     // Helper Functions
+    void applySoftmax(DoubleVector2D& Z) const;
     void applyActivation(DoubleVector2D& Z, const size_t layer) const;
     void applyGradientActivation(DoubleVector2D& Z, const size_t layer) const;
     void printModelInfo(bool printWeights=false) const;
@@ -148,7 +149,7 @@ public:
             throw std::invalid_argument("`groundTruth` Matrix is not of same size as `preds` matrix");
         }
 
-        // Only supports SSE loss function
+        // Both SEE and ENTROPY use same operation, so only those are supported right now
         const double numNeurons = groundTruth.size();
         const double numInstances = groundTruth[0].size();
         DoubleVector2D outputGrad(numNeurons, std::vector<double>(numInstances));

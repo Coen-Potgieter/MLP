@@ -102,26 +102,51 @@ void MLP::setBatchSize(const int newBatchSize) {
 
 void MLP::initWeights(InitMethod method, const double minVal, const double maxVal) {
 
-    for (size_t layer = 0; layer < weights.size(); layer ++) {
-        for (size_t row = 0; row < weights[layer].size(); row++){
-            // Note the start index of col here since the first column is reserved for bias
-            for (size_t col = 1; col < weights[layer][row].size(); col++){
-                const double randomWeight = (rand() % static_cast<int>((maxVal - minVal) * 1000)) / 1000.0 + minVal;
-                this->weights[layer][row][col] = randomWeight;
-            }
-        }
+    switch(method) {
+        case MLP::InitMethod::UNIFORM_RANDOM:
+            initUniformRandom(this->weights, minVal, maxVal, true);
+            break;
+        case MLP::InitMethod::GAUSSIAN_RANDOM:
+            break;
+        default:
+            std::cerr << "This Init Method Has Not Yet Been Implemented..." << std::endl;
+            break;
     }
 }
 
 void MLP::initBias(InitMethod method, const double minVal, const double maxVal) {
-    for (size_t layer = 0; layer < this->weights.size(); layer ++) {
-        for (size_t row = 0; row < this->weights[layer].size(); row++){
-            // Uniform
-            const double randomWeight = (rand() % static_cast<int>((maxVal - minVal) * 1000)) / 1000.0 + minVal;
-            // Only populate the first column
-            this->weights[layer][row][0] = randomWeight;
+    switch(method) {
+        case MLP::InitMethod::UNIFORM_RANDOM:
+            initUniformRandom(this->weights, minVal, maxVal, false);
+            break;
+        case MLP::InitMethod::GAUSSIAN_RANDOM:
+            break;
+        default:
+            std::cerr << "This Init Method Has Not Yet Been Implemented..." << std::endl;
+            break;
+    }
+}
+
+void MLP::applySoftmax(DoubleVector2D& Z) const {
+
+    const size_t numRows = Z.size();
+    const size_t numCols = Z[0].size();
+    // Loop through Cols
+    std::vector<double> singleCol(numRows);
+    for (size_t colIdx = 0; colIdx < numCols; colIdx++){
+        // Gather Col Vals
+        for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
+            singleCol[rowIdx] = Z[rowIdx][colIdx];
+        }
+        // Apply Softmax
+        singleCol = softmaxHandler(singleCol);
+
+        // Write softmaxxed vals back to matrix
+        for (size_t rowIdx = 0; rowIdx < numRows; rowIdx++) {
+            Z[rowIdx][colIdx] = singleCol[rowIdx];
         }
     }
+    return;
 }
 
 void MLP::applyActivation(DoubleVector2D& Z, const size_t layer) const {
@@ -163,31 +188,21 @@ void MLP::applyActivation(DoubleVector2D& Z, const size_t layer) const {
             actFuncPtr = &elu;
             break;
         case MLP::ActFunc::SOFTMAX:
-            Z = transpose(Z);
-            for (std::vector<double>& row : Z) {
-                row = softmax(row);
-            }
-            Z = transpose(Z);
-            return;
+            return applySoftmax(Z);
             break;
         default:
             throw std::logic_error("Activation Function Has Not Yet Been Implemented");
     }
 
-    bool passInVector = (actFuncToUse == ActFunc::SOFTMAX);
 
-    if (passInVector) {
-        // 
 
-    } else{
-        // Apply Activation Function to each element
-        for (std::vector<double>& row : Z) {
-            for (double& elem : row) {
-                elem = actFuncPtr(elem);
-            }
+    // Apply Activation Function to each element
+    for (std::vector<double>& row : Z) {
+        for (double& elem : row) {
+            elem = actFuncPtr(elem);
         }
     }
-    
+
     return;
 }
 void MLP::applyGradientActivation(DoubleVector2D& Z, const size_t layer) const {
@@ -422,9 +437,17 @@ void MLP::miniBatchGD(const DoubleVector2D& data, const DoubleVector2D& target, 
 
         // 3. Assess Error
         forwardRes = this->forwardProp(data);
-
         totalError = calcLoss(target, forwardRes.a[numLayers-1]);
 
+        // Check if nan
+        if (totalError != totalError) {
+            std::cerr << "Nan Occurred" << std::endl;
+            DoubleVector3D nanWeights = this->getWeights();
+            for (const DoubleVector2D& layer : nanWeights) {
+                printMatrix(layer);
+            }
+            return;
+        }
         std::cout << "Total Error For Epoch " << epochIdx + 1 << ": " << totalError << std::endl;
     }
 }

@@ -1,4 +1,7 @@
 
+*Disregard this README, It is my obsidian note for this project going through the motions of building a NN using raw C++*
+
+---
 
 > [!info]
 > - This is a note detailing implementation by providing explanations of various functions 
